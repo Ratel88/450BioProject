@@ -1,0 +1,17 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" >
+<title>Untitled Document</title>
+</head>
+
+<body>
+<p><strong>Project Properties...</strong><br>
+  Allows you to modify the default properties and configure the behavior of MAGIC Tool.&nbsp; There are three tabs, each containing properties of different types.</p>
+<blockquote>
+  <p><strong>Data Handling:</strong> Currently the only data handling option is how to handle missing data. You can choose to <em>remove</em> or <em>ignore</em> any genes in your current project that are missing data. When a DNA microarray is printed, some features will be missing and therefore you cannot collect data for this gene. If you choose to <em>remove</em> all genes missing data, then genes missing any data from one or more columns will not be used for calculating dissimilarities. If you choose to <em>ignore</em>, you will be prompted for what percentage of possible data (in percent) must be available for a gene to be included in your data analysis. This allows you to work with genes that are missing data from less than that percentage of columns. Genes missing more than the input threshold percentage of columns will be removed.</p>
+  <p><strong>Image Saving: </strong>Controls maximum image size saved from MAGIC Tool<strong></strong></p>
+  <p><strong>Group Files:</strong> There are two options under this tab.&nbsp; The first, "New Expression Files Carry Group Files When:" controls how group files go along with expression files.&nbsp; This option comes into play whenever you create a new expression file from an existing expression file, for example by log-transforming, adding information, filtering, normalizing or limiting data. Since a group file is simply a list of genes, you may wish groups that you selected based on values in an earlier version of the expression data to be accessible after you do one of the above processes to create a new expression file.&nbsp; The default setting is Always, meaning all group files are copied to the folder containing the new expression file.&nbsp; You can also choose to never copy group files, or to only copy the group files when the expression data itself was not changed (e.g. when adding info to the expression file).</p>
+</blockquote>
+</body>
+</html>
