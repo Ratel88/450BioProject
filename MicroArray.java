@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -25,6 +26,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -42,6 +45,8 @@ public class MicroArray extends JFrame {
 	private JTextField textField_3;
 	private JTextField textField_4;
 	private JTextField textField_5;
+	private ButtonGroup group1;
+	private ButtonGroup group2;
 
 	/**
 	 * Launch the application.
@@ -303,7 +308,7 @@ public class MicroArray extends JFrame {
 		gbc_lblZoomLevel.gridy = 4;
 		panel.add(lblZoomLevel, gbc_lblZoomLevel);
 
-		// Gridding panel
+		// Gridding panel starts here
 
 		JPanel gridding = new JPanel();
 		TitledBorder grid_title = BorderFactory.createTitledBorder(blackline, "Gridding");
@@ -398,18 +403,38 @@ public class MicroArray extends JFrame {
 		gridding.add(btnAdvanced);
 
 		JButton btnSet_1 = new JButton("Set");
+		btnSet_1.addActionListener(set1 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_1.setBounds(60, 105, 55, 23);
 		gridding.add(btnSet_1);
 
 		JButton btnAdvanced_1 = new JButton("Advanced");
+		btnAdvanced_1.addActionListener(adv -> {
+
+			// TODO Advanced button code goes here.
+
+		});
 		btnAdvanced_1.setBounds(125, 105, 90, 23);
 		gridding.add(btnAdvanced_1);
 
 		JButton btnCancel = new JButton("Cancel");
+		btnCancel.addActionListener(can -> {
+
+			// TODO Cancel button code goes here.
+
+		});
 		btnCancel.setBounds(60, 135, 75, 23);
 		gridding.add(btnCancel);
 
 		JButton btnSet_2 = new JButton("Set");
+		btnSet_2.addActionListener(set2 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_2.setBounds(60, 165, 55, 23);
 		gridding.add(btnSet_2);
 
@@ -430,18 +455,38 @@ public class MicroArray extends JFrame {
 		gridding.add(lblGrid_7);
 
 		JButton btnSet_3 = new JButton("Set");
+		btnSet_3.addActionListener(set3 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_3.setBounds(290, 75, 55, 23);
 		gridding.add(btnSet_3);
 
 		JButton btnSet_4 = new JButton("Set");
+		btnSet_4.addActionListener(set4 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_4.setBounds(290, 105, 55, 23);
 		gridding.add(btnSet_4);
 
 		JButton btnSet_5 = new JButton("Set");
+		btnSet_5.addActionListener(set5 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_5.setBounds(290, 135, 55, 23);
 		gridding.add(btnSet_5);
 
 		JButton btnSet_6 = new JButton("Set");
+		btnSet_6.addActionListener(set6 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_6.setBounds(290, 165, 55, 23);
 		gridding.add(btnSet_6);
 
@@ -462,22 +507,42 @@ public class MicroArray extends JFrame {
 		gridding.add(lblGrid_11);
 
 		JButton btnSet_7 = new JButton("Set");
+		btnSet_7.addActionListener(set7 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_7.setBounds(520, 75, 55, 23);
 		gridding.add(btnSet_7);
 
 		JButton btnSet_8 = new JButton("Set");
+		btnSet_8.addActionListener(set8 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_8.setBounds(520, 105, 55, 23);
 		gridding.add(btnSet_8);
 
 		JButton btnSet_9 = new JButton("Set");
+		btnSet_9.addActionListener(set9 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_9.setBounds(520, 135, 55, 23);
 		gridding.add(btnSet_9);
 
 		JButton btnSet_10 = new JButton("Set");
+		btnSet_10.addActionListener(set10 -> {
+
+			// TODO Set button code goes here.
+
+		});
 		btnSet_10.setBounds(520, 165, 55, 23);
 		gridding.add(btnSet_10);
 
-		// Segmentation panel
+		// Segmentation panel starts here
 
 		JPanel segment = new JPanel();
 		TitledBorder seg_title = BorderFactory.createTitledBorder(blackline, "Segmentation");
@@ -508,6 +573,12 @@ public class MicroArray extends JFrame {
 		rdbtnNewRadioButton_1.setBounds(420, 16, 160, 23);
 		segment.add(rdbtnNewRadioButton_1);
 
+		//Button group so only one radio button can be active at one time.
+
+		group1 = new ButtonGroup();
+		group1.add(rdbtnNewRadioButton);
+		group1.add(rdbtnNewRadioButton_1);
+
 		JLabel lblThreshold = new JLabel("Threshold");
 		lblThreshold.setBounds(430, 50, 60, 14);
 		segment.add(lblThreshold);
@@ -516,16 +587,28 @@ public class MicroArray extends JFrame {
 		lblSpinnerGrid.setBounds(430, 110, 40, 14);
 		segment.add(lblSpinnerGrid);
 
-		JSpinner spinner = new JSpinner();
-		spinner.setBounds(480, 110, 29, 20);
+		 SpinnerModel spinnerModel =
+		         new SpinnerNumberModel(10, //initial value
+		            0, //min
+		            100, //max
+		            1);//step
+
+		JSpinner spinner = new JSpinner(spinnerModel);
+		spinner.setBounds(480, 110, 40, 20);
 		segment.add(spinner);
 
 		JLabel lblSpinnerSpot = new JLabel("Spot");
 		lblSpinnerSpot.setBounds(430, 150, 40, 14);
 		segment.add(lblSpinnerSpot);
 
-		JSpinner spinner_1 = new JSpinner();
-		spinner_1.setBounds(480, 150, 29, 20);
+		 SpinnerModel spinnerModel_1 =
+		         new SpinnerNumberModel(10, //initial value
+		            0, //min
+		            100, //max
+		            1);//step
+
+		JSpinner spinner_1 = new JSpinner(spinnerModel_1);
+		spinner_1.setBounds(480, 150, 40, 20);
 		segment.add(spinner_1);
 
 		JCheckBox chckbxNewCheckBox = new JCheckBox("Flag spot");
@@ -558,7 +641,7 @@ public class MicroArray extends JFrame {
 		lblRed.setBounds(300, 250, 40, 14);
 		segment.add(lblRed);
 
-		// Expression panel
+		// Expression panel starts here
 
 		JPanel expression = new JPanel();
 		TitledBorder exp_title = BorderFactory.createTitledBorder(blackline, "Gene Expression Ratios");
@@ -590,6 +673,12 @@ public class MicroArray extends JFrame {
 		rdbtnRed.setBounds(460, 16, 60, 23);
 		expression.add(rdbtnRed);
 
+		//Button group so only one radio button can be active at one time.
+
+		group2 = new ButtonGroup();
+		group2.add(rdbtnGreen);
+		group2.add(rdbtnRed);
+
 		JLabel lblNewLabel_3 = new JLabel("Select a method for calculating the gene expression levels:");
 		lblNewLabel_3.setBounds(10, 60, 350, 14);
 		expression.add(lblNewLabel_3);
@@ -603,16 +692,28 @@ public class MicroArray extends JFrame {
 		lblSpinnerGrid_2.setBounds(470, 58, 35, 14);
 		expression.add(lblSpinnerGrid_2);
 
-		JSpinner spinner_2 = new JSpinner();
-		spinner_2.setBounds(500, 58, 29, 20);
+		 SpinnerModel spinnerModel_2 =
+		         new SpinnerNumberModel(10, //initial value
+		            0, //min
+		            100, //max
+		            1);//step
+
+		JSpinner spinner_2 = new JSpinner(spinnerModel_2);
+		spinner_2.setBounds(500, 58, 40, 20);
 		expression.add(spinner_2);
 
 		JLabel lblSpinnerSpot_2 = new JLabel("Spot:");
 		lblSpinnerSpot_2.setBounds(545, 58, 35, 14);
 		expression.add(lblSpinnerSpot_2);
 
-		JSpinner spinner_3 = new JSpinner();
-		spinner_3.setBounds(578, 58, 29, 20);
+		 SpinnerModel spinnerModel_3 =
+		         new SpinnerNumberModel(10, //initial value
+		            0, //min
+		            100, //max
+		            1);//step
+
+		JSpinner spinner_3 = new JSpinner(spinnerModel_3);
+		spinner_3.setBounds(578, 58, 40, 20);
 		expression.add(spinner_3);
 
 		JCheckBox chckbxNewCheckBox_1 = new JCheckBox("Flag spot");
