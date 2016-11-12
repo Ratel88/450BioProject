@@ -5,12 +5,16 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -18,6 +22,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -32,6 +37,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MicroArray extends JFrame {
 
@@ -47,6 +53,13 @@ public class MicroArray extends JFrame {
 	private JTextField textField_5;
 	private ButtonGroup group1;
 	private ButtonGroup group2;
+	private JProgressBar exportProgress;
+
+	private String openFileNamePath;
+	private String saveFileNamePath;
+	private String saveAsFileNamePath;
+	private String importFileNamePath;
+	private String exportFileNamePath;
 
 	/**
 	 * Launch the application.
@@ -107,7 +120,36 @@ public class MicroArray extends JFrame {
 		mntmOpenProject.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
 		mntmOpenProject.addActionListener(pickedOpen -> {
 
-			// TODO Open project code goes here.
+			Thread openThread = new Thread() {
+
+				public void run() {
+
+					JFileChooser chooser = new JFileChooser();
+					FileNameExtensionFilter filter;
+
+					try {
+
+						filter = new FileNameExtensionFilter("Text file", "txt");
+						chooser.setFileFilter(filter);
+
+						chooser.showOpenDialog(null);
+						File f = chooser.getSelectedFile();
+						openFileNamePath = f.getAbsolutePath();
+
+						// TODO project loading code goes here
+
+					} catch (NullPointerException ex) {
+
+						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+								JOptionPane.WARNING_MESSAGE);
+
+					}
+
+				}
+
+			};
+
+			openThread.start();
 
 		});
 		mnFile.add(mntmOpenProject);
@@ -120,7 +162,38 @@ public class MicroArray extends JFrame {
 		mntmSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK));
 		mntmSave.addActionListener(pickedSave -> {
 
-			// TODO Save project code goes here.
+			Thread saveTread = new Thread() {
+
+				public void run() {
+
+					JFileChooser chooser = new JFileChooser();
+					FileNameExtensionFilter filter;
+
+					try {
+
+						filter = new FileNameExtensionFilter("Text file", "txt");
+						chooser.setFileFilter(filter);
+
+						chooser.showSaveDialog(null);
+						File f = chooser.getSelectedFile();
+						saveFileNamePath = f.getAbsolutePath();
+
+						// TODO file save code goes here.
+
+						FileWriter fw = new FileWriter(saveFileNamePath);
+
+					} catch (NullPointerException | IOException ex) {
+
+						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+								JOptionPane.WARNING_MESSAGE);
+
+					}
+
+				}
+
+			};
+
+			saveTread.start();
 
 		});
 		mnFile.add(mntmSave);
@@ -128,7 +201,38 @@ public class MicroArray extends JFrame {
 		JMenuItem mntmSaveAs = new JMenuItem("Save as....");
 		mntmSaveAs.addActionListener(pickedSaveAs -> {
 
-			// TODO Save project as.... code goes here.
+			Thread saveAsThread = new Thread() {
+
+				public void run() {
+
+					JFileChooser chooser = new JFileChooser();
+					FileNameExtensionFilter filter;
+
+					try {
+
+						filter = new FileNameExtensionFilter("Text file", "txt");
+						chooser.setFileFilter(filter);
+
+						chooser.showSaveDialog(null);
+						File f = chooser.getSelectedFile();
+						saveAsFileNamePath = f.getAbsolutePath();
+
+						// TODO file save code goes here.
+
+						FileWriter fw = new FileWriter(saveAsFileNamePath);
+
+					} catch (NullPointerException | IOException ex) {
+
+						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+								JOptionPane.WARNING_MESSAGE);
+
+					}
+
+				}
+
+			};
+
+			saveAsThread.start();
 
 		});
 		mnFile.add(mntmSaveAs);
@@ -141,7 +245,36 @@ public class MicroArray extends JFrame {
 		mntmImportSampleImage.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.CTRL_MASK));
 		mntmImportSampleImage.addActionListener(pickedImport -> {
 
-			// TODO Import image pair code goes here.
+			Thread importThread = new Thread() {
+
+				public void run() {
+
+					JFileChooser chooser = new JFileChooser();
+					FileNameExtensionFilter filter;
+
+					try {
+
+						filter = new FileNameExtensionFilter("Text file", "txt");
+						chooser.setFileFilter(filter);
+
+						chooser.showOpenDialog(null);
+						File f = chooser.getSelectedFile();
+						importFileNamePath = f.getAbsolutePath();
+
+						// TODO file importing code goes here.
+
+					} catch (NullPointerException ex) {
+
+						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+								JOptionPane.WARNING_MESSAGE);
+
+					}
+
+				}
+
+			};
+
+			importThread.start();
 
 		});
 		mnFile.add(mntmImportSampleImage);
@@ -151,7 +284,38 @@ public class MicroArray extends JFrame {
 		mntmExportGeneExpression.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.CTRL_MASK));
 		mntmExportGeneExpression.addActionListener(pickedExportGene -> {
 
-			// TODO Export gene expression code goes here.
+			Thread exportThread = new Thread() {
+
+				public void run() {
+
+					JFileChooser chooser = new JFileChooser();
+					FileNameExtensionFilter filter;
+
+					try {
+
+						filter = new FileNameExtensionFilter("Text file", "txt");
+						chooser.setFileFilter(filter);
+
+						chooser.showSaveDialog(null);
+						File f = chooser.getSelectedFile();
+						exportFileNamePath = f.getAbsolutePath();
+
+						// TODO file export code goes here.
+
+						FileWriter fw = new FileWriter(exportFileNamePath);
+
+					} catch (NullPointerException | IOException ex) {
+
+						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+								JOptionPane.WARNING_MESSAGE);
+
+					}
+
+				}
+
+			};
+
+			exportThread.start();
 
 		});
 		mnFile.add(mntmExportGeneExpression);
@@ -573,7 +737,7 @@ public class MicroArray extends JFrame {
 		rdbtnNewRadioButton_1.setBounds(420, 16, 160, 23);
 		segment.add(rdbtnNewRadioButton_1);
 
-		//Button group so only one radio button can be active at one time.
+		// Button group so only one radio button can be active at one time.
 
 		group1 = new ButtonGroup();
 		group1.add(rdbtnNewRadioButton);
@@ -587,11 +751,10 @@ public class MicroArray extends JFrame {
 		lblSpinnerGrid.setBounds(430, 110, 40, 14);
 		segment.add(lblSpinnerGrid);
 
-		 SpinnerModel spinnerModel =
-		         new SpinnerNumberModel(10, //initial value
-		            0, //min
-		            100, //max
-		            1);//step
+		SpinnerModel spinnerModel = new SpinnerNumberModel(10, // initial value
+				0, // min
+				100, // max
+				1);// step
 
 		JSpinner spinner = new JSpinner(spinnerModel);
 		spinner.setBounds(480, 110, 40, 20);
@@ -601,11 +764,11 @@ public class MicroArray extends JFrame {
 		lblSpinnerSpot.setBounds(430, 150, 40, 14);
 		segment.add(lblSpinnerSpot);
 
-		 SpinnerModel spinnerModel_1 =
-		         new SpinnerNumberModel(10, //initial value
-		            0, //min
-		            100, //max
-		            1);//step
+		SpinnerModel spinnerModel_1 = new SpinnerNumberModel(10, // initial
+																	// value
+				0, // min
+				100, // max
+				1);// step
 
 		JSpinner spinner_1 = new JSpinner(spinnerModel_1);
 		spinner_1.setBounds(480, 150, 40, 20);
@@ -673,7 +836,7 @@ public class MicroArray extends JFrame {
 		rdbtnRed.setBounds(460, 16, 60, 23);
 		expression.add(rdbtnRed);
 
-		//Button group so only one radio button can be active at one time.
+		// Button group so only one radio button can be active at one time.
 
 		group2 = new ButtonGroup();
 		group2.add(rdbtnGreen);
@@ -692,11 +855,11 @@ public class MicroArray extends JFrame {
 		lblSpinnerGrid_2.setBounds(470, 58, 35, 14);
 		expression.add(lblSpinnerGrid_2);
 
-		 SpinnerModel spinnerModel_2 =
-		         new SpinnerNumberModel(10, //initial value
-		            0, //min
-		            100, //max
-		            1);//step
+		SpinnerModel spinnerModel_2 = new SpinnerNumberModel(10, // initial
+																	// value
+				0, // min
+				100, // max
+				1);// step
 
 		JSpinner spinner_2 = new JSpinner(spinnerModel_2);
 		spinner_2.setBounds(500, 58, 40, 20);
@@ -706,11 +869,11 @@ public class MicroArray extends JFrame {
 		lblSpinnerSpot_2.setBounds(545, 58, 35, 14);
 		expression.add(lblSpinnerSpot_2);
 
-		 SpinnerModel spinnerModel_3 =
-		         new SpinnerNumberModel(10, //initial value
-		            0, //min
-		            100, //max
-		            1);//step
+		SpinnerModel spinnerModel_3 = new SpinnerNumberModel(10, // initial
+																	// value
+				0, // min
+				100, // max
+				1);// step
 
 		JSpinner spinner_3 = new JSpinner(spinnerModel_3);
 		spinner_3.setBounds(578, 58, 40, 20);
