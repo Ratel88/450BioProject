@@ -1,10 +1,12 @@
-import java.awt.Color;
-import java.awt.EventQueue;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import ij.io.Opener;
+import magictool.image.GridManager;
+import magictool.image.ImageDisplayPanel;
+
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.image.MemoryImageSource;
+import java.awt.image.PixelGrabber;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -45,7 +47,7 @@ public class MicroArray extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	private JPanel contentPane;
-	private JTextField textField;
+	private ImageDisplayPanel imageDisplayPanel;
 	private Border blackline = BorderFactory.createLineBorder(Color.black);
 	private JTextField textField_1;
 	private JTextField textField_2;
@@ -61,6 +63,10 @@ public class MicroArray extends JFrame {
 	private String saveAsFileNamePath;
 	private String importFileNamePath;
 	private String exportFileNamePath;
+
+	private ArrayList<MATabPanel> panelArrayList;
+	private JTabbedPane tabbedPane;
+	private int counterSample = 1;
 
 	/**
 	 * Launch the application.
@@ -252,25 +258,41 @@ public class MicroArray extends JFrame {
 
 					JFileChooser chooser = new JFileChooser();
 					FileNameExtensionFilter filter;
-
+					String greenPath = "";
+					String redPath = "";
+					boolean pass = false;
 					try {
-
-						filter = new FileNameExtensionFilter("Text file", "txt");
+						filter = new FileNameExtensionFilter("TIF file", "tif");
 						chooser.setFileFilter(filter);
+						File f;
 
+						chooser.setDialogTitle("Load Red Image File...");
 						chooser.showOpenDialog(null);
-						File f = chooser.getSelectedFile();
+						f = chooser.getSelectedFile();
 						importFileNamePath = f.getAbsolutePath();
 
+						chooser.setDialogTitle("Load Green Image File...");
+						chooser.showOpenDialog(null);
+						f = chooser.getSelectedFile();
+						greenPath = f.getAbsolutePath();
+						redPath = importFileNamePath;
+
+						pass = true;
 						// TODO file importing code goes here.
 
 					} catch (NullPointerException ex) {
 
-						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+						JOptionPane.showMessageDialog(null, "Pair selection canceled.", "File warning",
 								JOptionPane.WARNING_MESSAGE);
 
 					}
-
+					if (pass)
+					{
+						MATabPanel panel = new MATabPanel(greenPath, redPath);
+						tabbedPane.addTab("Sample " + counterSample++, null, panel, null);
+						panelArrayList.add(panel);
+						tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
+					}
 				}
 
 			};
@@ -417,68 +439,25 @@ public class MicroArray extends JFrame {
 		gbl_contentPane.rowWeights = new double[] { 1.0, Double.MIN_VALUE };
 		contentPane.setLayout(gbl_contentPane);
 
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		GridBagConstraints gbc_tabbedPane = new GridBagConstraints();
 		gbc_tabbedPane.fill = GridBagConstraints.BOTH;
 		gbc_tabbedPane.gridx = 0;
 		gbc_tabbedPane.gridy = 0;
 		contentPane.add(tabbedPane, gbc_tabbedPane);
 
-		// TODO Setup dynamic building of tabs
-		// Sample 1 tab
-		MATabPanel panel = new MATabPanel();
-		tabbedPane.addTab("Sample 1", null, panel, null);
-
-
-		// Sample 2 tab
-		MATabPanel panel_1 = new MATabPanel();
-		tabbedPane.addTab("Sample 2", null, panel_1, null);
-
-		MATabPanel panel_2 = new MATabPanel();
-		tabbedPane.addTab("Sample 3", null, panel_2, null);
-
-		MATabPanel panel_3 = new MATabPanel();
-		tabbedPane.addTab("Sample 4", null, panel_3, null);
-
-		MATabPanel panel_4 = new MATabPanel();
-		tabbedPane.addTab("Sample 5", null, panel_4, null);
-
-		MATabPanel panel_5 = new MATabPanel();
-		tabbedPane.addTab("Sample 6", null, panel_5, null);
-
-		MATabPanel panel_6 = new MATabPanel();
-		tabbedPane.addTab("Sample 7", null, panel_6, null);
-
-		MATabPanel panel_7 = new MATabPanel();
-		tabbedPane.addTab("Sample 8", null, panel_7, null);
-
-		MATabPanel panel_8 = new MATabPanel();
-		tabbedPane.addTab("Sample 9", null, panel_8, null);
-
-		MATabPanel panel_9 = new MATabPanel();
-		tabbedPane.addTab("Sample 10", null, panel_9, null);
-
-		ArrayList<MATabPanel> panelArrayList = new ArrayList<MATabPanel>();
-		panelArrayList.add(panel);
-		panelArrayList.add(panel_1);
-		panelArrayList.add(panel_2);
-		panelArrayList.add(panel_3);
-		panelArrayList.add(panel_4);
-		panelArrayList.add(panel_5);
-		panelArrayList.add(panel_6);
-		panelArrayList.add(panel_7);
-		panelArrayList.add(panel_8);
-		panelArrayList.add(panel_9);
+		//initialize tab list
+		panelArrayList = new ArrayList<MATabPanel>();
 	}
 
 	public class MATabPanel extends JPanel
 	{
-		public MATabPanel()
+		public MATabPanel(String greenPath, String redPath)
 		{
-			setup();
+			setup(greenPath, redPath);
 		}
 
-		private void setup()
+		private void setup(String greenPath, String redPath)
 		{
 			this.setBorder(blackline);
 			GridBagLayout gbl_panel = new GridBagLayout();
@@ -488,8 +467,8 @@ public class MicroArray extends JFrame {
 			gbl_panel.rowWeights = new double[] { Double.MIN_VALUE };
 			this.setLayout(gbl_panel);
 
-			textField = new JTextField();
-			JScrollPane scroll = new JScrollPane(textField);
+			imageDisplayPanel = new ImageDisplayPanel(buildImage(greenPath, redPath), new GridManager());
+			JScrollPane scroll = new JScrollPane(imageDisplayPanel);
 			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 			GridBagConstraints gbc_scrollField = new GridBagConstraints();
@@ -503,13 +482,13 @@ public class MicroArray extends JFrame {
 			gbc_scrollField.insets = new Insets(5, 5, 0, 0); // top, left, bottom,
 			// right
 			this.add(scroll, gbc_scrollField);
-			textField.setColumns(10);
+			//textField.setColumns(10);
 
 			JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
 			slider.setMajorTickSpacing(10);
 			slider.setMinorTickSpacing(1);
-			slider.setPaintTicks(true);
-			slider.setPaintLabels(true);
+			slider.setPaintTicks(false);
+			slider.setPaintLabels(false);
 			GridBagConstraints gbc_slider = new GridBagConstraints();
 			gbc_slider.fill = GridBagConstraints.HORIZONTAL;
 			gbc_slider.insets = new Insets(0, 0, 0, 5);
@@ -962,6 +941,45 @@ public class MicroArray extends JFrame {
 			JLabel lblCombined = new JLabel("Combined");
 			lblCombined.setBounds(450, 250, 100, 14);
 			expression.add(lblCombined);
+		}
+
+		private Image buildImage(String greenPath, String redPath)
+		{
+			Opener greenImage = new Opener();
+			Opener redImage = new Opener();
+			Image green = greenImage.openImage(greenPath).getImage();
+			Image red = redImage.openImage(redPath).getImage();
+
+			Dimension redDim = new Dimension(red.getWidth(null),red.getHeight(null));
+			Dimension greenDim = new Dimension(green.getWidth(null),green.getHeight(null));
+			int w = greenDim.width;
+			int h = greenDim.height;
+
+			//Use green as base.
+			int[] pixels = new int[w*h];
+			int[] redpixels = new int[w*h];
+
+			PixelGrabber pg = new PixelGrabber(green, 0,0,w,h,pixels,0,w);
+			PixelGrabber redpg = new PixelGrabber(red, 0,0,w,h,redpixels,0,w);
+			try{
+				pg.grabPixels();
+				redpg.grabPixels();
+			}
+			catch(Exception e){
+				System.out.print("(Error Grabbing Pixels) "+e);
+			}
+
+			for(int i=0; i<pixels.length; i++){
+				int p = pixels[i];
+				int redp = redpixels[i];
+				int a = (p >> 24) & 0xFF;
+				int r = (redp >> 16) & 0xFF;
+				int b = 0;
+				int g = (p >>  8) & 0xFF;
+
+				pixels[i] = (a << 24 | r << 16 | g << 8 | b);
+			}
+			return createImage(new MemoryImageSource(w,h,pixels,0,w));
 		}
 	}
 }
