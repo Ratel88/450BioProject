@@ -1,10 +1,10 @@
 import ij.io.Opener;
+import magictool.image.Grid;
 import magictool.image.GridManager;
 import magictool.image.ImageDisplayPanel;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
 import java.io.File;
@@ -12,35 +12,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JSlider;
-import javax.swing.JSpinner;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
-import javax.swing.SpinnerModel;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.NumberFormatter;
 
 public class MicroArray extends JFrame {
 
@@ -67,6 +47,7 @@ public class MicroArray extends JFrame {
 	private ArrayList<MATabPanel> panelArrayList;
 	private JTabbedPane tabbedPane;
 	private int counterSample = 1;
+
 
 	/**
 	 * Launch the application.
@@ -457,6 +438,14 @@ public class MicroArray extends JFrame {
 			setup(greenPath, redPath);
 		}
 
+		private JScrollPane gridScrollPane;
+		private JPanel gridScrollPanePanel;
+		private ArrayList<GridPanel> gridPanelsList = new ArrayList<>();
+		private GridManager manager = new GridManager();
+
+		//TODO remove
+		private int NUMBER_OF_GRIDS = 20;
+
 		private void setup(String greenPath, String redPath)
 		{
 			this.setBorder(blackline);
@@ -467,7 +456,25 @@ public class MicroArray extends JFrame {
 			gbl_panel.rowWeights = new double[] { Double.MIN_VALUE };
 			this.setLayout(gbl_panel);
 
-			imageDisplayPanel = new ImageDisplayPanel(buildImage(greenPath, redPath), new GridManager());
+			imageDisplayPanel = new ImageDisplayPanel(buildImage(greenPath, redPath), manager);
+			imageDisplayPanel.getCanvas().addMouseListener(new MouseListener() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					coordinateFound(xCoordinate(e.getX()), yCoordinate(e.getY()));
+				}
+
+				@Override
+				public void mousePressed(MouseEvent e) { }
+
+				@Override
+				public void mouseReleased(MouseEvent e)  { }
+
+				@Override
+				public void mouseEntered(MouseEvent e) { }
+
+				@Override
+				public void mouseExited(MouseEvent e) { }
+			});
 			JScrollPane scroll = new JScrollPane(imageDisplayPanel);
 			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
@@ -505,7 +512,6 @@ public class MicroArray extends JFrame {
 			this.add(lblZoomLevel, gbc_lblZoomLevel);
 
 			// Gridding panel starts here
-
 			JPanel gridding = new JPanel();
 			TitledBorder grid_title = BorderFactory.createTitledBorder(blackline, "Gridding");
 			grid_title.setTitleJustification(TitledBorder.LEFT);
@@ -560,183 +566,19 @@ public class MicroArray extends JFrame {
 			btnDelete.setBounds(324, 45, 70, 23);
 			gridding.add(btnDelete);
 
-			JLabel lblGrid = new JLabel("Grid 1");
-			lblGrid.setBounds(10, 80, 40, 14);
-			gridding.add(lblGrid);
+			gridScrollPanePanel = new JPanel();
+			gridScrollPane = new JScrollPane(gridScrollPanePanel);
+			gridScrollPane.setBounds(10, 70, 600, 150);
+			gridding.add(gridScrollPane);
 
-			JLabel lblGrid_1 = new JLabel("Grid 2");
-			lblGrid_1.setBounds(10, 110, 40, 14);
-			gridding.add(lblGrid_1);
-
-			JLabel lblGrid_2 = new JLabel("Grid 3");
-			lblGrid_2.setBounds(10, 140, 40, 14);
-			gridding.add(lblGrid_2);
-
-			JLabel lblGrid_3 = new JLabel("Grid 4");
-			lblGrid_3.setBounds(10, 170, 40, 14);
-			gridding.add(lblGrid_3);
-
-			JLabel lblClickTheCenter = new JLabel("To cancel click the center of the top left spot");
-			lblClickTheCenter.setBounds(10, 205, 300, 14);
-			gridding.add(lblClickTheCenter);
-
-			JButton btnSet = new JButton("Set");
-			btnSet.addActionListener(setBut -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet.setBounds(60, 75, 55, 23);
-			gridding.add(btnSet);
-
-			JButton btnAdvanced = new JButton("Advanced");
-			btnAdvanced.addActionListener(advBut -> {
-
-				// TODO Advanced button code goes here.
-
-			});
-			btnAdvanced.setBounds(125, 75, 90, 23);
-			gridding.add(btnAdvanced);
-
-			JButton btnSet_1 = new JButton("Set");
-			btnSet_1.addActionListener(set1 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_1.setBounds(60, 105, 55, 23);
-			gridding.add(btnSet_1);
-
-			JButton btnAdvanced_1 = new JButton("Advanced");
-			btnAdvanced_1.addActionListener(adv -> {
-
-				// TODO Advanced button code goes here.
-
-			});
-			btnAdvanced_1.setBounds(125, 105, 90, 23);
-			gridding.add(btnAdvanced_1);
-
-			JButton btnCancel = new JButton("Cancel");
-			btnCancel.addActionListener(can -> {
-
-				// TODO Cancel button code goes here.
-
-			});
-			btnCancel.setBounds(60, 135, 75, 23);
-			gridding.add(btnCancel);
-
-			JButton btnSet_2 = new JButton("Set");
-			btnSet_2.addActionListener(set2 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_2.setBounds(60, 165, 55, 23);
-			gridding.add(btnSet_2);
-
-			JLabel lblGrid_4 = new JLabel("Grid 5");
-			lblGrid_4.setBounds(240, 80, 40, 14);
-			gridding.add(lblGrid_4);
-
-			JLabel lblGrid_5 = new JLabel("Grid 6");
-			lblGrid_5.setBounds(240, 110, 40, 14);
-			gridding.add(lblGrid_5);
-
-			JLabel lblGrid_6 = new JLabel("Grid 7");
-			lblGrid_6.setBounds(240, 140, 40, 14);
-			gridding.add(lblGrid_6);
-
-			JLabel lblGrid_7 = new JLabel("Grid 8");
-			lblGrid_7.setBounds(240, 170, 40, 14);
-			gridding.add(lblGrid_7);
-
-			JButton btnSet_3 = new JButton("Set");
-			btnSet_3.addActionListener(set3 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_3.setBounds(290, 75, 55, 23);
-			gridding.add(btnSet_3);
-
-			JButton btnSet_4 = new JButton("Set");
-			btnSet_4.addActionListener(set4 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_4.setBounds(290, 105, 55, 23);
-			gridding.add(btnSet_4);
-
-			JButton btnSet_5 = new JButton("Set");
-			btnSet_5.addActionListener(set5 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_5.setBounds(290, 135, 55, 23);
-			gridding.add(btnSet_5);
-
-			JButton btnSet_6 = new JButton("Set");
-			btnSet_6.addActionListener(set6 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_6.setBounds(290, 165, 55, 23);
-			gridding.add(btnSet_6);
-
-			JLabel lblGrid_8 = new JLabel("Grid 9");
-			lblGrid_8.setBounds(470, 80, 40, 14);
-			gridding.add(lblGrid_8);
-
-			JLabel lblGrid_9 = new JLabel("Grid 10");
-			lblGrid_9.setBounds(470, 110, 40, 14);
-			gridding.add(lblGrid_9);
-
-			JLabel lblGrid_10 = new JLabel("Grid 11");
-			lblGrid_10.setBounds(470, 140, 40, 14);
-			gridding.add(lblGrid_10);
-
-			JLabel lblGrid_11 = new JLabel("Grid 12");
-			lblGrid_11.setBounds(470, 170, 40, 14);
-			gridding.add(lblGrid_11);
-
-			JButton btnSet_7 = new JButton("Set");
-			btnSet_7.addActionListener(set7 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_7.setBounds(520, 75, 55, 23);
-			gridding.add(btnSet_7);
-
-			JButton btnSet_8 = new JButton("Set");
-			btnSet_8.addActionListener(set8 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_8.setBounds(520, 105, 55, 23);
-			gridding.add(btnSet_8);
-
-			JButton btnSet_9 = new JButton("Set");
-			btnSet_9.addActionListener(set9 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_9.setBounds(520, 135, 55, 23);
-			gridding.add(btnSet_9);
-
-			JButton btnSet_10 = new JButton("Set");
-			btnSet_10.addActionListener(set10 -> {
-
-				// TODO Set button code goes here.
-
-			});
-			btnSet_10.setBounds(520, 165, 55, 23);
-			gridding.add(btnSet_10);
+			//TODO remove this test code
+            manager.setGridNum(NUMBER_OF_GRIDS);
+			for (int i = 0; i < NUMBER_OF_GRIDS; i++)
+			{
+				GridPanel gp = new GridPanel(i+1);
+				gridPanelsList.add(gp);
+				gridScrollPanePanel.add(gp);
+			}
 
 			// Segmentation panel starts here
 
@@ -980,6 +822,253 @@ public class MicroArray extends JFrame {
 				pixels[i] = (a << 24 | r << 16 | g << 8 | b);
 			}
 			return createImage(new MemoryImageSource(w,h,pixels,0,w));
+		}
+
+		private void drawGrid(int num, int tlX, int tlY, int trX, int trY, int bX, int bY, int row, int col)
+		{
+			Grid grid = manager.getGrid(num-1);
+            if (grid == null)
+            {
+                grid = new Grid();
+            }
+			int tY;
+			if (tlY > trY) {tY = tlY;}
+			else {tY = trY;}
+			grid.setTopLeftX(tlX);
+			grid.setTopLeftY(tY);
+			grid.setTopRightX(trX);
+			grid.setTopRightY(tY);
+			grid.setBottomLeftX(tlX);
+			grid.setBottomLeftY(bY);
+			grid.setBottomRightX(trX);
+			grid.setBottomRightY(bY);
+            grid.setRows(row);
+            grid.setColumns(col);
+            manager.setGrid(num-1, grid);
+
+            imageDisplayPanel.repaint();
+		}
+
+		private void coordinateFound(int x, int y)
+		{
+			for (GridPanel gp: gridPanelsList)
+			{
+				if (gp.awaitingData)
+				{
+					gp.addCoordinates(x, y);
+				}
+			}
+		}
+
+		/**
+		 * gets the actual x-coordinate on the image based on the screen x-coordinate
+		 * @param ex screen x-coordinate
+		 * @return actual x-coordinate on the image based on the screen x-coordinate
+		 */
+		public int xCoordinate(int ex) {
+			return ((imageDisplayPanel.getCanvas().getSrcRect().x+Math.round((float)((ex)/imageDisplayPanel.getZoom()))));
+		}
+
+		/**
+		 * gets the actual y-coordinate on the image based on the screen y-coordinate
+		 * @param ey screen y-coordinate
+		 * @return actual y-coordinate on the image based on the screen y-coordinate
+		 */
+		public int yCoordinate(int ey) {
+			return ((imageDisplayPanel.getCanvas().getSrcRect().y+Math.round((float)((ey)/imageDisplayPanel.getZoom()))));
+		}
+
+		private class GridPanel extends JPanel {
+			private JButton btnSet;
+			private JButton btnAdvanced;
+			private JButton btnCancel;
+			private JLabel lblName;
+			private JLabel lblClickTopLeft;
+			private JLabel lblClickTopRight;
+			private JLabel lblClickBottom;
+			private JLabel lblNumberRows;
+			private JLabel lblNumberColumns;
+			private JFormattedTextField tfRows;
+			private JFormattedTextField tfColumns;
+
+			private int myNumber;
+			private int mode = 0;
+			private boolean setFlag = false;
+			private boolean awaitingData = false;
+
+			private int topLeftX_true;
+			private int topLeftY_true;
+			private int topLeftX_temp;
+			private int topLeftY_temp;
+			private int topRightX_true;
+			private int topRightY_true;
+			private int topRightX_temp;
+			private int topRightY_temp;
+			private int bottomX_true;
+			private int bottomY_true;
+			private int bottomX_temp;
+			private int bottomY_temp;
+			private int rows_true;
+			private int rows_temp;
+			private int columns_true;
+			private int columns_temp;
+
+			public GridPanel(int number)
+			{
+				myNumber = number;
+				setup();
+			}
+
+			private void setup() {
+				this.setMinimumSize(new Dimension(40,300));
+				btnSet = new JButton("Set");
+				btnSet.addActionListener(setButton->{
+					progressMode();
+				});
+				btnAdvanced = new JButton("Advanced");
+				btnCancel = new JButton("Cancel");
+				btnCancel.addActionListener(cancelButton->{
+					cancelSetting();
+				});
+				lblName = new JLabel("Grid " + myNumber);
+				lblClickTopLeft = new JLabel("Click the centre of the top left spot.");
+				lblClickTopRight = new JLabel("Click the centre of the top right spot.");
+				lblClickBottom = new JLabel("Click the centre of a spot in the bottommost row.");
+				lblNumberRows = new JLabel("Enter the number of rows.");
+				lblNumberColumns = new JLabel("Enter the number of columns.");
+				tfRows = new JFormattedTextField(new NumberFormatter());
+				tfRows.setMinimumSize(new Dimension(50, 20));
+				tfRows.setPreferredSize(new Dimension(50,20));
+				tfColumns = new JFormattedTextField();
+				tfColumns.setMinimumSize(new Dimension(50, 20));
+				tfColumns.setPreferredSize(new Dimension(50,20));
+
+				tfRows.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+						"rowInput");
+				tfRows.getActionMap().put("rowInput", new AbstractAction() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						rows_temp = Integer.parseInt(tfRows.getText());
+						progressMode();
+					}
+				});
+				tfColumns.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+						"columnInput");
+				tfColumns.getActionMap().put("columnInput", new AbstractAction() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						columns_temp = Integer.parseInt(tfColumns.getText());
+						progressMode();
+					}
+				});
+
+				add(lblName);
+				add(btnSet);
+				this.setVisible(true);
+			}
+
+			public boolean isAwaitingData()
+			{
+				return awaitingData;
+			}
+
+			public void addCoordinates(int x, int y)
+			{
+				switch(mode)
+				{
+					case 1:
+						topLeftX_temp = x;
+						topLeftY_temp = y;
+						break;
+					case 2:
+						topRightX_temp = x;
+						topRightY_temp = y;
+						break;
+					case 3:
+						bottomX_temp = x;
+						bottomY_temp = y;
+						break;
+					default:
+						break;
+				}
+				progressMode();
+			}
+
+			public void progressMode()
+			{
+				mode++;
+				removeAll();
+				add(lblName);
+
+				switch(mode)
+				{
+					case 1:
+						add(btnCancel);
+						add(lblClickTopLeft);
+						awaitingData = true;
+						break;
+					case 2:
+						add(btnCancel);
+						add(lblClickTopRight);
+						break;
+					case 3:
+						add(btnCancel);
+						add(lblClickBottom);
+						break;
+					case 4:
+						add(btnCancel);
+						add(tfRows);
+						add(lblNumberRows);
+						break;
+					case 5:
+						add(btnCancel);
+						add(tfColumns);
+						add(lblNumberColumns);
+						awaitingData = false;
+						break;
+					case 6:
+						add(btnSet);
+						add(btnAdvanced);
+						setFlag = true;
+						commitValues();
+						break;
+					case 7:
+						mode = 0;
+						progressMode();
+						break;
+					default:
+						mode = 0;
+						progressMode();
+						break;
+				}
+				updateUI();
+			}
+
+			private void cancelSetting()
+			{
+				mode = 0;
+				removeAll();
+				add(lblName);
+				add(btnSet);
+				awaitingData = false;
+				if (setFlag)
+				{
+					add(btnAdvanced);
+				}
+			}
+
+			private void commitValues()
+			{
+				topLeftX_true = topLeftX_temp;
+				topLeftY_true = topLeftY_temp;
+				topRightX_true = topRightX_temp;
+				topRightY_true = topRightY_temp;
+				bottomX_true = bottomX_temp;
+				bottomY_true = bottomY_temp;
+				rows_true = rows_temp;
+				columns_true = columns_temp;
+				drawGrid(myNumber, topLeftX_true, topLeftY_true, topRightX_true, topRightY_true, bottomX_true, bottomY_true, rows_true, columns_true);
+			}
 		}
 	}
 }
