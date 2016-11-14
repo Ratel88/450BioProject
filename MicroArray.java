@@ -805,14 +805,14 @@ public class MicroArray extends JFrame {
 		private void segmentationMode(Image greenImage, Image redImage, JPanel target)
 		{
 
-			if(sdRedSlide == null)
+			if(sdGreenSlide == null)
 			{
 				sdRedSlide = new SegmentDisplay(redImage, manager);
 				sdRedSlide.setBounds(10, 45, 200, 200);
 				target.add(sdRedSlide);
 
 				sdGreenSlide = new SegmentDisplay(greenImage, manager);
-				sdRedSlide.setBounds(215, 45, 200, 200);
+				sdGreenSlide.setBounds(215, 45, 200, 200);
 				target.add(sdGreenSlide);
 			}
 
