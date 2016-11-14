@@ -30,8 +30,10 @@ public class MicroArray extends JFrame {
 	private JPanel contentPane;
 	private ImageDisplayPanel imageDisplayPanel;
 	private Border blackline = BorderFactory.createLineBorder(Color.black);
-	private SegmentDisplay sdRedSlide;
+
 	private SegmentDisplay sdGreenSlide;
+    private SegmentDisplay sdRedSlide;
+
 	private JTextField textField_3;
 	private JTextField textField_4;
 	private JTextField textField_5;
@@ -675,26 +677,6 @@ public class MicroArray extends JFrame {
 			segment.add(slider_1);
 
 
-/*            JPanel pnlRedSlide = new JPanel();
-            pnlRedSlide.setBounds(10, 45, 200, 200);
-            pnlRedSlide.setBackground(Color.red);
-            pnlRedSlide.setLayout(null);
-            segment.add(pnlRedSlide);
-*/
-
-
-			JPanel pnlGreenSlide = new JPanel();
-			pnlGreenSlide.setBounds(215, 45, 200,200);
-			pnlGreenSlide.setBackground(Color.green);
-			pnlGreenSlide.setLayout(null);
-			segment.add(pnlGreenSlide);
-
-
-
-
-
-
-
 			JLabel lblGreen = new JLabel("Green");
 			lblGreen.setBounds(90, 250, 40, 14);
 			segment.add(lblGreen);
@@ -823,16 +805,16 @@ public class MicroArray extends JFrame {
 		private void segmentationMode(Image greenImage, Image redImage, JPanel target)
 		{
 
-			manager.setCurrentGrid(0);
-			manager.getCurrentGrid().setCurrentSpot(manager.getActualSpotNum(0,45));
-
 			if(sdRedSlide == null)
 			{
 				sdRedSlide = new SegmentDisplay(redImage, manager);
 				sdRedSlide.setBounds(10, 45, 200, 200);
 				target.add(sdRedSlide);
-			}
 
+				sdGreenSlide = new SegmentDisplay(greenImage, manager);
+				sdRedSlide.setBounds(215, 45, 200, 200);
+				target.add(sdGreenSlide);
+			}
 
 
 		}
