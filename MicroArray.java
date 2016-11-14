@@ -2,6 +2,7 @@ import ij.io.Opener;
 import magictool.image.Grid;
 import magictool.image.GridManager;
 import magictool.image.ImageDisplayPanel;
+import magictool.image.SegmentDisplay;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -29,8 +30,8 @@ public class MicroArray extends JFrame {
 	private JPanel contentPane;
 	private ImageDisplayPanel imageDisplayPanel;
 	private Border blackline = BorderFactory.createLineBorder(Color.black);
-	private JTextField textField_1;
-	private JTextField textField_2;
+	private SegmentDisplay sdRedSlide;
+	private SegmentDisplay sdGreenSlide;
 	private JTextField textField_3;
 	private JTextField textField_4;
 	private JTextField textField_5;
@@ -572,7 +573,7 @@ public class MicroArray extends JFrame {
 			gridding.add(gridScrollPane);
 
 			//TODO remove this test code
-            manager.setGridNum(NUMBER_OF_GRIDS);
+			manager.setGridNum(NUMBER_OF_GRIDS);
 			for (int i = 0; i < NUMBER_OF_GRIDS; i++)
 			{
 				GridPanel gp = new GridPanel(i+1);
@@ -603,13 +604,26 @@ public class MicroArray extends JFrame {
 			lblNewLabel_1.setBounds(10, 20, 300, 14);
 			segment.add(lblNewLabel_1);
 
+
+			Opener greenImage = new Opener();
+			Opener redImage = new Opener();
+			Image green = greenImage.openImage(greenPath).getImage();
+			Image red = redImage.openImage(redPath).getImage();
+
+
+
+
 			JRadioButton rdbtnNewRadioButton = new JRadioButton("Adaptive Circle");
 			rdbtnNewRadioButton.setBounds(310, 16, 110, 23);
 			segment.add(rdbtnNewRadioButton);
 
 			JRadioButton rdbtnNewRadioButton_1 = new JRadioButton("Seeded Region Growing");
 			rdbtnNewRadioButton_1.setBounds(420, 16, 160, 23);
+			rdbtnNewRadioButton_1.addActionListener(seededRegionButton->{
+				segmentationMode(green, red, segment);
+			});
 			segment.add(rdbtnNewRadioButton_1);
+
 
 			// Button group so only one radio button can be active at one time.
 
@@ -625,28 +639,28 @@ public class MicroArray extends JFrame {
 			lblSpinnerGrid.setBounds(430, 110, 40, 14);
 			segment.add(lblSpinnerGrid);
 
-			SpinnerModel spinnerModel = new SpinnerNumberModel(10, // initial value
+			SpinnerModel spinnerGrid = new SpinnerNumberModel(1, // initial value
 					0, // min
 					100, // max
 					1);// step
 
-			JSpinner spinner = new JSpinner(spinnerModel);
-			spinner.setBounds(480, 110, 40, 20);
-			segment.add(spinner);
+			JSpinner spnGrid = new JSpinner(spinnerGrid);
+			spnGrid.setBounds(480, 110, 40, 20);
+			segment.add(spnGrid);
 
 			JLabel lblSpinnerSpot = new JLabel("Spot");
 			lblSpinnerSpot.setBounds(430, 150, 40, 14);
 			segment.add(lblSpinnerSpot);
 
-			SpinnerModel spinnerModel_1 = new SpinnerNumberModel(10, // initial
+			SpinnerModel spinnerSpot = new SpinnerNumberModel(1, // initial
 					// value
 					0, // min
 					100, // max
 					1);// step
 
-			JSpinner spinner_1 = new JSpinner(spinnerModel_1);
-			spinner_1.setBounds(480, 150, 40, 20);
-			segment.add(spinner_1);
+			JSpinner spnSpot = new JSpinner(spinnerSpot);
+			spnSpot.setBounds(480, 150, 40, 20);
+			segment.add(spnSpot);
 
 			JCheckBox chckbxNewCheckBox = new JCheckBox("Flag spot");
 			chckbxNewCheckBox.setBounds(530, 150, 97, 23);
@@ -660,15 +674,26 @@ public class MicroArray extends JFrame {
 			slider_1.setBounds(500, 50, 100, 40);
 			segment.add(slider_1);
 
-			textField_1 = new JTextField();
-			textField_1.setBounds(10, 45, 200, 200);
-			segment.add(textField_1);
-			textField_1.setColumns(10);
 
-			textField_2 = new JTextField();
-			textField_2.setBounds(215, 45, 200, 200);
-			segment.add(textField_2);
-			textField_2.setColumns(10);
+/*            JPanel pnlRedSlide = new JPanel();
+            pnlRedSlide.setBounds(10, 45, 200, 200);
+            pnlRedSlide.setBackground(Color.red);
+            pnlRedSlide.setLayout(null);
+            segment.add(pnlRedSlide);
+*/
+
+
+			JPanel pnlGreenSlide = new JPanel();
+			pnlGreenSlide.setBounds(215, 45, 200,200);
+			pnlGreenSlide.setBackground(Color.green);
+			pnlGreenSlide.setLayout(null);
+			segment.add(pnlGreenSlide);
+
+
+
+
+
+
 
 			JLabel lblGreen = new JLabel("Green");
 			lblGreen.setBounds(90, 250, 40, 14);
@@ -677,6 +702,16 @@ public class MicroArray extends JFrame {
 			JLabel lblRed = new JLabel("Red");
 			lblRed.setBounds(300, 250, 40, 14);
 			segment.add(lblRed);
+
+
+			//handler code
+
+
+
+
+
+
+
 
 			// Expression panel starts here
 
@@ -785,6 +820,24 @@ public class MicroArray extends JFrame {
 			expression.add(lblCombined);
 		}
 
+		private void segmentationMode(Image greenImage, Image redImage, JPanel target)
+		{
+
+			manager.setCurrentGrid(0);
+			manager.getCurrentGrid().setCurrentSpot(manager.getActualSpotNum(0,45));
+
+			if(sdRedSlide == null)
+			{
+				sdRedSlide = new SegmentDisplay(redImage, manager);
+				sdRedSlide.setBounds(10, 45, 200, 200);
+				target.add(sdRedSlide);
+			}
+
+
+
+		}
+
+
 		private Image buildImage(String greenPath, String redPath)
 		{
 			Opener greenImage = new Opener();
@@ -827,10 +880,10 @@ public class MicroArray extends JFrame {
 		private void drawGrid(int num, int tlX, int tlY, int trX, int trY, int bX, int bY, int row, int col)
 		{
 			Grid grid = manager.getGrid(num-1);
-            if (grid == null)
-            {
-                grid = new Grid();
-            }
+			if (grid == null)
+			{
+				grid = new Grid();
+			}
 			int tY;
 			if (tlY > trY) {tY = tlY;}
 			else {tY = trY;}
@@ -842,11 +895,11 @@ public class MicroArray extends JFrame {
 			grid.setBottomLeftY(bY);
 			grid.setBottomRightX(trX);
 			grid.setBottomRightY(bY);
-            grid.setRows(row);
-            grid.setColumns(col);
-            manager.setGrid(num-1, grid);
+			grid.setRows(row);
+			grid.setColumns(col);
+			manager.setGrid(num-1, grid);
 
-            imageDisplayPanel.repaint();
+			imageDisplayPanel.repaint();
 		}
 
 		private void coordinateFound(int x, int y)
