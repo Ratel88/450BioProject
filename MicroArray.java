@@ -38,10 +38,11 @@ public class MicroArray extends JFrame {
 	private JTextField textField_5;
 	private ButtonGroup group1;
 	private ButtonGroup group2;
-	private JProgressBar exportProgress;
 
-	private ExportGene geneExport;
 	private JProgressBar exportBar;
+	private JProgressBar importBar;
+	private JProgressBar openBar;
+	private JProgressBar saveAsBar;
 
 	private String openFileNamePath;
 	private String saveFileNamePath;
@@ -116,26 +117,48 @@ public class MicroArray extends JFrame {
 
 				public void run() {
 
-					JFileChooser chooser = new JFileChooser();
-					FileNameExtensionFilter filter;
+					openBar = new JProgressBar();
+					openBar.setVisible(true);
+					openBar.setIndeterminate(true);
 
-					try {
+					class OpenProject extends SwingWorker<Void, Void> {
 
-						filter = new FileNameExtensionFilter("Text file", "txt");
-						chooser.setFileFilter(filter);
+						JFileChooser chooser = new JFileChooser();
+						FileNameExtensionFilter filter;
 
-						chooser.showOpenDialog(null);
-						File f = chooser.getSelectedFile();
-						openFileNamePath = f.getAbsolutePath();
+						@Override
+						public Void doInBackground() throws Exception {
 
-						// TODO project loading code goes here
+							try {
 
-					} catch (NullPointerException ex) {
+								filter = new FileNameExtensionFilter("Text file", "txt");
+								chooser.setFileFilter(filter);
 
-						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
-								JOptionPane.WARNING_MESSAGE);
+								chooser.showSaveDialog(null);
+								File f = chooser.getSelectedFile();
+								openFileNamePath = f.getAbsolutePath();
+
+							} catch (NullPointerException ex) {
+
+								JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+										JOptionPane.WARNING_MESSAGE);
+
+							}
+
+							return null;
+						}
+
+						@Override
+						public void done() {
+
+							openBar.setIndeterminate(false);
+							JOptionPane.showMessageDialog(null, "Project Open complete.");
+
+						}
 
 					}
+
+					new OpenProject().execute();
 
 				}
 
@@ -196,29 +219,50 @@ public class MicroArray extends JFrame {
 			Thread saveAsThread = new Thread() {
 
 				public void run() {
+					saveAsBar = new JProgressBar();
+					saveAsBar.setVisible(true);
+					saveAsBar.setIndeterminate(true);
 
-					JFileChooser chooser = new JFileChooser();
-					FileNameExtensionFilter filter;
+					class SaveAs extends SwingWorker<Void, Void> {
 
-					try {
+						JFileChooser chooser = new JFileChooser();
+						FileNameExtensionFilter filter;
 
-						filter = new FileNameExtensionFilter("Text file", "txt");
-						chooser.setFileFilter(filter);
+						@Override
+						public Void doInBackground() throws Exception {
 
-						chooser.showSaveDialog(null);
-						File f = chooser.getSelectedFile();
-						saveAsFileNamePath = f.getAbsolutePath();
+							try {
 
-						// TODO file save code goes here.
+								filter = new FileNameExtensionFilter("Text file", "txt");
+								chooser.setFileFilter(filter);
 
-						FileWriter fw = new FileWriter(saveAsFileNamePath);
+								chooser.showSaveDialog(null);
+								File f = chooser.getSelectedFile();
+								saveAsFileNamePath = f.getAbsolutePath();
 
-					} catch (NullPointerException | IOException ex) {
+								FileWriter fw_save = new FileWriter(saveAsFileNamePath);
 
-						JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
-								JOptionPane.WARNING_MESSAGE);
+							} catch (NullPointerException | IOException ex) {
+
+								JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+										JOptionPane.WARNING_MESSAGE);
+
+							}
+
+							return null;
+						}
+
+						@Override
+						public void done() {
+
+							saveAsBar.setIndeterminate(false);
+							JOptionPane.showMessageDialog(null, "Save Complete.");
+
+						}
 
 					}
+
+					new SaveAs().execute();
 
 				}
 
@@ -241,42 +285,49 @@ public class MicroArray extends JFrame {
 
 				public void run() {
 
-					JFileChooser chooser = new JFileChooser();
-					FileNameExtensionFilter filter;
-					String greenPath = "";
-					String redPath = "";
-					boolean pass = false;
-					try {
-						filter = new FileNameExtensionFilter("TIF file", "tif");
-						chooser.setFileFilter(filter);
-						File f;
+					importBar = new JProgressBar();
+					importBar.setVisible(true);
+					importBar.setIndeterminate(true);
 
-						chooser.setDialogTitle("Load Red Image File...");
-						chooser.showOpenDialog(null);
-						f = chooser.getSelectedFile();
-						importFileNamePath = f.getAbsolutePath();
+					class ImportGene extends SwingWorker<Void, Void> {
 
-						chooser.setDialogTitle("Load Green Image File...");
-						chooser.showOpenDialog(null);
-						f = chooser.getSelectedFile();
-						greenPath = f.getAbsolutePath();
-						redPath = importFileNamePath;
+						JFileChooser chooser = new JFileChooser();
+						FileNameExtensionFilter filter;
 
-						pass = true;
-						// TODO file importing code goes here.
+						@Override
+						public Void doInBackground() throws Exception {
 
-					} catch (NullPointerException ex) {
+							try {
 
-						JOptionPane.showMessageDialog(null, "Pair selection canceled.", "File warning",
-								JOptionPane.WARNING_MESSAGE);
+								filter = new FileNameExtensionFilter("Text file", "txt");
+								chooser.setFileFilter(filter);
+
+								chooser.showSaveDialog(null);
+								File f = chooser.getSelectedFile();
+								importFileNamePath = f.getAbsolutePath();
+
+							} catch (NullPointerException ex) {
+
+								JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+										JOptionPane.WARNING_MESSAGE);
+
+							}
+
+							return null;
+						}
+
+						@Override
+						public void done() {
+
+							importBar.setIndeterminate(false);
+							JOptionPane.showMessageDialog(null, "Import Complete.");
+
+						}
 
 					}
-					if (pass) {
-						MATabPanel panel = new MATabPanel(greenPath, redPath);
-						tabbedPane.addTab("Sample " + counterSample++, null, panel, null);
-						panelArrayList.add(panel);
-						tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
-					}
+
+					new ImportGene().execute();
+
 				}
 
 			};
@@ -297,6 +348,45 @@ public class MicroArray extends JFrame {
 					exportBar = new JProgressBar();
 					exportBar.setVisible(true);
 					exportBar.setIndeterminate(true);
+
+					class ExportGene extends SwingWorker<Void, Void> {
+
+						JFileChooser chooser = new JFileChooser();
+						FileNameExtensionFilter filter;
+
+						@Override
+						public Void doInBackground() throws Exception {
+
+							try {
+
+								filter = new FileNameExtensionFilter("Text file", "txt");
+								chooser.setFileFilter(filter);
+
+								chooser.showSaveDialog(null);
+								File f = chooser.getSelectedFile();
+								exportFileNamePath = f.getAbsolutePath();
+
+								FileWriter fw_exp = new FileWriter(exportFileNamePath);
+
+							} catch (NullPointerException | IOException ex) {
+
+								JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+										JOptionPane.WARNING_MESSAGE);
+
+							}
+
+							return null;
+						}
+
+						@Override
+						public void done() {
+
+							exportBar.setIndeterminate(false);
+							JOptionPane.showMessageDialog(null, "Export Complete.");
+
+						}
+
+					}
 
 					new ExportGene().execute();
 
@@ -1057,41 +1147,4 @@ public class MicroArray extends JFrame {
 		}
 	}
 
-	class ExportGene extends SwingWorker<Void, Void> {
-
-		JFileChooser chooser = new JFileChooser();
-		FileNameExtensionFilter filter;
-
-		@Override
-		public Void doInBackground() throws Exception {
-
-			try {
-
-				filter = new FileNameExtensionFilter("Text file", "txt");
-				chooser.setFileFilter(filter);
-
-				chooser.showSaveDialog(null);
-				File f = chooser.getSelectedFile();
-				exportFileNamePath = f.getAbsolutePath();
-
-				FileWriter fw = new FileWriter(exportFileNamePath);
-
-			} catch (NullPointerException | IOException ex) {
-
-				JOptionPane.showMessageDialog(null, "No file selected.", "File warning", JOptionPane.WARNING_MESSAGE);
-
-			}
-
-			return null;
-		}
-
-		@Override
-		public void done() {
-
-			exportBar.setIndeterminate(false);
-			JOptionPane.showMessageDialog(null, "Export Complete.");
-
-		}
-
-	}
 }
