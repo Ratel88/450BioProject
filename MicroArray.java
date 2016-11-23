@@ -7,10 +7,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -44,11 +48,11 @@ public class MicroArray extends JFrame {
 	private JProgressBar openBar;
 	private JProgressBar saveAsBar;
 
-	private String openFileNamePath;
 	private String saveFileNamePath;
 	private String saveAsFileNamePath;
-	private String importFileNamePath;
 	private String exportFileNamePath;
+
+	String[] dataArray;
 
 	private ArrayList<MATabPanel> panelArrayList;
 	private JTabbedPane tabbedPane;
@@ -136,7 +140,34 @@ public class MicroArray extends JFrame {
 
 								chooser.showSaveDialog(null);
 								File f = chooser.getSelectedFile();
-								openFileNamePath = f.getAbsolutePath();
+								String openFileNamePath = f.getAbsolutePath();
+
+								BufferedReader readData = null;
+								List<String> lines = new ArrayList<String>();
+								String entry;
+
+								try {
+
+									readData = new BufferedReader(new FileReader(openFileNamePath));
+
+									while ((entry = readData.readLine()) != null) {
+
+										lines.add(entry);
+
+									}
+
+								} catch (FileNotFoundException e) {
+
+									System.out.println("File not found");
+
+								} finally {
+
+									dataArray = lines.toArray(new String[0]);
+
+									readData.close();
+									// testData();
+
+								}
 
 							} catch (NullPointerException ex) {
 
@@ -304,7 +335,34 @@ public class MicroArray extends JFrame {
 
 								chooser.showSaveDialog(null);
 								File f = chooser.getSelectedFile();
-								importFileNamePath = f.getAbsolutePath();
+								String importFileNamePath = f.getAbsolutePath();
+
+								BufferedReader readData = null;
+								List<String> lines = new ArrayList<String>();
+								String entry;
+
+								try {
+
+									readData = new BufferedReader(new FileReader(importFileNamePath));
+
+									while ((entry = readData.readLine()) != null) {
+
+										lines.add(entry);
+
+									}
+
+								} catch (FileNotFoundException e) {
+
+									System.out.println("File not found");
+
+								} finally {
+
+									dataArray = lines.toArray(new String[0]);
+
+									readData.close();
+									// testData();
+
+								}
 
 							} catch (NullPointerException ex) {
 
@@ -1145,6 +1203,16 @@ public class MicroArray extends JFrame {
 						bottomY_true, rows_true, columns_true);
 			}
 		}
+	}
+
+	// Use to test open and import data integrity.
+	private void testData() {
+
+		for (int i = 0; i < dataArray.length; i++) {
+
+			System.out.println(dataArray[i]);
+		}
+
 	}
 
 }
