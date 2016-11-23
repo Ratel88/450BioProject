@@ -49,8 +49,6 @@ public class MicroArray extends JFrame {
 	private JProgressBar saveAsBar;
 
 	private String saveFileNamePath;
-	private String saveAsFileNamePath;
-	private String exportFileNamePath;
 
 	String[] dataArray;
 
@@ -269,9 +267,33 @@ public class MicroArray extends JFrame {
 
 								chooser.showSaveDialog(null);
 								File f = chooser.getSelectedFile();
-								saveAsFileNamePath = f.getAbsolutePath();
+								String saveAsFileNamePath = f.getAbsolutePath();
 
-								FileWriter fw_save = new FileWriter(saveAsFileNamePath);
+								FileWriter writeCSV = new FileWriter(saveAsFileNamePath);
+
+								try {
+
+									for (int i = 0; i < dataArray.length; i++) {
+
+										writeCSV.write(dataArray[i] + "\n");
+
+									}
+
+								} catch (IOException e) {
+
+									e.printStackTrace();
+
+								}
+
+								try {
+
+									writeCSV.flush();
+									writeCSV.close();
+
+								} catch (IOException e) {
+
+									e.printStackTrace();
+								}
 
 							} catch (NullPointerException | IOException ex) {
 
@@ -422,9 +444,33 @@ public class MicroArray extends JFrame {
 
 								chooser.showSaveDialog(null);
 								File f = chooser.getSelectedFile();
-								exportFileNamePath = f.getAbsolutePath();
+								String exportFileNamePath = f.getAbsolutePath();
 
-								FileWriter fw_exp = new FileWriter(exportFileNamePath);
+								FileWriter writeCSV = new FileWriter(exportFileNamePath);
+
+								try {
+
+									for (int i = 0; i < dataArray.length; i++) {
+
+										writeCSV.write(dataArray[i] + "\n");
+
+									}
+
+								} catch (IOException e) {
+
+									e.printStackTrace();
+
+								}
+
+								try {
+
+									writeCSV.flush();
+									writeCSV.close();
+
+								} catch (IOException e) {
+
+									e.printStackTrace();
+								}
 
 							} catch (NullPointerException | IOException ex) {
 
