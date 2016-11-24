@@ -624,6 +624,7 @@ public class MicroArray extends JFrame {
 			rdbtnNewRadioButton_1.addActionListener(seededRegionButton->{
 				segmentationMode(green, red, segment);
 			});
+
 			segment.add(rdbtnNewRadioButton_1);
 
 
@@ -814,6 +815,8 @@ public class MicroArray extends JFrame {
 				sdGreenSlide = new SegmentDisplay(greenImage, manager);
 				sdGreenSlide.setBounds(215, 45, 200, 200);
 				target.add(sdGreenSlide);
+
+				target.repaint();
 			}
 
 
