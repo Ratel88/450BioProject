@@ -805,37 +805,15 @@ public class MicroArray extends JFrame {
 		private void segmentationMode(Image greenImage, Image redImage, JPanel target)
 		{
 
-			if(true)
-//				if(sdGreenSlide == null)
+			if(sdGreenSlide == null)
 			{
 				sdRedSlide = new SegmentDisplay(redImage, manager);
 				sdRedSlide.setBounds(10, 45, 200, 200);
+				target.add(sdRedSlide);
 
-				Thread sleeper = new Thread() {
-
-					public void run() {
-
-						try {
-							Thread.sleep(500);
-
-							target.add(sdRedSlide);
-
-							sdGreenSlide = new
-
-									SegmentDisplay(greenImage, manager);
-							sdGreenSlide.setBounds(215, 45, 200, 200);
-							target.add(sdGreenSlide);
-
-
-						}catch(InterruptedException e){
-
-							e.printStackTrace();
-						}
-
-					}
-
-				};
-				sleeper.start();
+				sdGreenSlide = new SegmentDisplay(greenImage, manager);
+				sdGreenSlide.setBounds(215, 45, 200, 200);
+				target.add(sdGreenSlide);
 			}
 
 
