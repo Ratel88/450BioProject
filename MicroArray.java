@@ -22,7 +22,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.NumberFormatter;
-
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 public class MicroArray extends JFrame {
 
 	private static final long serialVersionUID = 1L;
@@ -50,6 +51,20 @@ public class MicroArray extends JFrame {
 	private ArrayList<MATabPanel> panelArrayList;
 	private JTabbedPane tabbedPane;
 	private int counterSample = 1;
+
+	public JScrollPane scrollGreen;
+	private JScrollPane scrollRed;
+	private JPanel greenPanel = new JPanel();
+	private JPanel redPanel = new JPanel();
+
+	public JSplitPane jSplitPaneVert = new JSplitPane();
+
+	protected double cellHeight;
+
+	/**polygon containing the coordinates of current spot cell*/
+	protected Polygon cell;
+
+	private int w,h,newTopLeftX,newTopLeftY, gridNum, spotNum;
 
 
 	/**
@@ -665,6 +680,7 @@ public class MicroArray extends JFrame {
 			spnSpot.setBounds(480, 150, 40, 20);
 			segment.add(spnSpot);
 
+            spnSpot.addChangeListener(changePosition -> moveTo((Integer) spnGrid.getValue(), (Integer) spnSpot.getValue()));
 			JCheckBox chckbxNewCheckBox = new JCheckBox("Flag spot");
 			chckbxNewCheckBox.setBounds(530, 150, 97, 23);
 			segment.add(chckbxNewCheckBox);
@@ -808,19 +824,99 @@ public class MicroArray extends JFrame {
 
 			if(sdGreenSlide == null)
 			{
-				sdRedSlide = new SegmentDisplay(redImage, manager);
-				sdRedSlide.setBounds(10, 45, 200, 200);
-				target.add(sdRedSlide);
+                scrollRed = new JScrollPane(sdRedSlide);
+                scrollRed.setBounds(215, 45, 200, 200);
+                target.add(scrollRed);
+                scrollGreen = new JScrollPane(sdGreenSlide);
+                scrollGreen.setBounds(10, 45, 200, 200);
+                target.add(scrollGreen);
+                target.repaint();
 
-				sdGreenSlide = new SegmentDisplay(greenImage, manager);
-				sdGreenSlide.setBounds(215, 45, 200, 200);
-				target.add(sdGreenSlide);
+                sdRedSlide = new SegmentDisplay(redImage, manager);
+                sdRedSlide.setBounds(-10, -50, 200, 200);
+                scrollRed.add(sdRedSlide);
 
+                sdGreenSlide = new SegmentDisplay(greenImage, manager);
+                sdGreenSlide.setBounds(-10, -50, 200, 200);
+                scrollGreen.add(sdGreenSlide);
+
+                scrollRed.repaint();
+                scrollGreen.repaint();
+
+                sdRedSlide.zoom(7);
+                sdGreenSlide.zoom(7);
 				target.repaint();
+
+                //zoomToCell();
+                showCurrentCell();
 			}
 
 
 		}
+
+		public void moveTo(int grid, int spot)
+        {
+            setSpot(grid - 1, spot - 1);   //zero based
+            showCurrentCell();
+       }
+
+    /*
+    * sets the current spot to the specified grid and (transformed) spot number
+    * @param grid grid number
+    * @param spot transformed spot number
+    */
+        public void setSpot(int grid, int spot){
+            if(grid >= 0 && grid < manager.getNumGrids() && spot>=0 && spot<manager.getGrid(grid).getNumOfSpots()){
+                gridNum=grid;
+                spotNum=spot;
+                manager.setCurrentGrid(grid);
+                manager.getCurrentGrid().setCurrentSpot(manager.getActualSpotNum(grid,spot));
+                showCurrentCell();
+
+            }
+        }
+
+
+		/**
+		 * sets the segement displays to show the current spot cells for both the red and green image
+		 */
+		public void showCurrentCell() {
+			setCurrentCell();
+			newTopLeftX = ((int)(sdGreenSlide.getZoom()*cell.xpoints[0]))-4;
+			newTopLeftY = ((int)(sdGreenSlide.getZoom()*cell.ypoints[0]))-4;
+			scrollGreen.getViewport().setViewPosition(new Point(newTopLeftX, newTopLeftY));
+			scrollRed.getViewport().setViewPosition(new Point(newTopLeftX,newTopLeftY));
+
+            sdGreenSlide.repaint();
+            sdRedSlide.repaint();
+		}
+
+		/**
+		 * sets the magnification in both segment displays to the spot level
+		 */
+		public void zoomToCell(){
+			sdGreenSlide.zoom(((jSplitPaneVert.getHeight()-jSplitPaneVert.getDividerSize()-(2*redPanel.getHeight()))/2)/cellHeight);
+			sdRedSlide.zoom(((jSplitPaneVert.getHeight()-jSplitPaneVert.getDividerSize()-(2*redPanel.getHeight()))/2)/cellHeight);
+			showCurrentCell();
+		}
+
+		/**
+		 * sets the current cell coordinates
+		 */
+		public void setCurrentCell() {
+			Polygon p = manager.getCurrentGrid().getTranslatedPolygon();
+			Polygon q = new Polygon();
+			if(p!=null) {
+				for(int j=0; j<p.xpoints.length; j++){
+					q.xpoints[j]=(int)((sdGreenSlide.screenX(p.xpoints[j]))/sdGreenSlide.getZoom());
+					q.ypoints[j]=(int)((sdGreenSlide.screenX(p.ypoints[j]))/sdGreenSlide.getZoom());
+				}
+				manager.getCurrentGrid().setSpots(q);
+				cell = manager.getCurrentGrid().getCurrentSpot();
+			}
+			cellHeight = cell.ypoints[3]-cell.ypoints[0];
+		}
+
 
 
 		private Image buildImage(String greenPath, String redPath)
