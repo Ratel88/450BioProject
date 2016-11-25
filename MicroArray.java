@@ -824,28 +824,28 @@ public class MicroArray extends JFrame {
 
 			if(sdGreenSlide == null)
 			{
-                scrollRed = new JScrollPane(sdRedSlide);
-                scrollRed.setBounds(215, 45, 200, 200);
-                target.add(scrollRed);
-                scrollGreen = new JScrollPane(sdGreenSlide);
-                scrollGreen.setBounds(10, 45, 200, 200);
-                target.add(scrollGreen);
-                target.repaint();
-
-                sdRedSlide = new SegmentDisplay(redImage, manager);
-                sdRedSlide.setBounds(-10, -50, 200, 200);
-                scrollRed.add(sdRedSlide);
 
                 sdGreenSlide = new SegmentDisplay(greenImage, manager);
                 sdGreenSlide.setBounds(-10, -50, 200, 200);
-                scrollGreen.add(sdGreenSlide);
+
+                sdRedSlide = new SegmentDisplay(redImage, manager);
+                sdRedSlide.setBounds(-20, -100, 200, 200);
+
+                scrollGreen = new JScrollPane(sdGreenSlide);
+                scrollGreen.setBounds(10, 45, 200, 200);
+                target.add(scrollGreen);
+
+                scrollRed = new JScrollPane(sdRedSlide);
+                scrollRed.setBounds(215, 45, 200, 200);
+                target.add(scrollRed);
+
+                target.repaint();
 
                 scrollRed.repaint();
                 scrollGreen.repaint();
 
-                sdRedSlide.zoom(7);
-                sdGreenSlide.zoom(7);
-				target.repaint();
+                sdRedSlide.zoom(10);
+                sdGreenSlide.zoom(10);
 
                 //zoomToCell();
                 showCurrentCell();
