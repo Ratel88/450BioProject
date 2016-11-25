@@ -49,6 +49,10 @@ public class MicroArray extends JFrame {
 	private JProgressBar saveAsBar;
 
 	private String saveFileNamePath;
+	private String openFileNamePath;
+	private String saveAsFileNamePath;
+	private String importFileNamePath;
+	private String exportFileNamePath;
 
 	String[] dataArray;
 
@@ -346,51 +350,42 @@ public class MicroArray extends JFrame {
 
 						JFileChooser chooser = new JFileChooser();
 						FileNameExtensionFilter filter;
+						String greenPath = "";
+						String redPath = "";
+						boolean pass = false;
 
 						@Override
 						public Void doInBackground() throws Exception {
 
 							try {
-
-								filter = new FileNameExtensionFilter("Text file", "txt");
+								filter = new FileNameExtensionFilter("TIF file", "tif");
 								chooser.setFileFilter(filter);
+								File f;
+								chooser.setDialogTitle("Load Red Image File...");
+								chooser.showOpenDialog(null);
+								f = chooser.getSelectedFile();
+								importFileNamePath = f.getAbsolutePath();
 
-								chooser.showSaveDialog(null);
-								File f = chooser.getSelectedFile();
-								String importFileNamePath = f.getAbsolutePath();
+								chooser.setDialogTitle("Load Green Image File...");
+								chooser.showOpenDialog(null);
+								f = chooser.getSelectedFile();
+								greenPath = f.getAbsolutePath();
+								redPath = importFileNamePath;
 
-								BufferedReader readData = null;
-								List<String> lines = new ArrayList<String>();
-								String entry;
-
-								try {
-
-									readData = new BufferedReader(new FileReader(importFileNamePath));
-
-									while ((entry = readData.readLine()) != null) {
-
-										lines.add(entry);
-
-									}
-
-								} catch (FileNotFoundException e) {
-
-									System.out.println("File not found");
-
-								} finally {
-
-									dataArray = lines.toArray(new String[0]);
-
-									readData.close();
-									// testData();
-
-								}
+								pass = true;
+								// TODO file importing code goes here.
 
 							} catch (NullPointerException ex) {
 
-								JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
+								JOptionPane.showMessageDialog(null, "Pair selection canceled.", "File warning",
 										JOptionPane.WARNING_MESSAGE);
 
+							}
+							if (pass) {
+								MATabPanel panel = new MATabPanel(greenPath, redPath);
+								tabbedPane.addTab("Sample " + counterSample++, null, panel, null);
+								panelArrayList.add(panel);
+								tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
 							}
 
 							return null;
@@ -411,7 +406,6 @@ public class MicroArray extends JFrame {
 				}
 
 			};
-
 			importThread.start();
 
 		});
