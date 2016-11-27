@@ -271,10 +271,10 @@ class MATabPanel extends JPanel {
 		Image red = redImage.openImage(redPath).getImage();
 
 		JRadioButton rdbtnNewRadioButton = new JRadioButton("Adaptive Circle");
+		rdbtnNewRadioButton.setBounds(310, 16, 110, 23);
 		rdbtnNewRadioButton.addActionListener(adaptiveCircle -> {
 			segmentationMode(green, red, segment);
 		});
-		rdbtnNewRadioButton.setBounds(310, 16, 110, 23);
 		segment.add(rdbtnNewRadioButton);
 
 		JRadioButton rdbtnNewRadioButton_1 = new JRadioButton("Seeded Region Growing");
@@ -628,6 +628,7 @@ class MATabPanel extends JPanel {
 
 			// zoomToCell();
 			showCurrentCell();
+
 		}
 
 	}
