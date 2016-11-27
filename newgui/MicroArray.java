@@ -1,9 +1,10 @@
 package newgui;
 
-import magictool.image.GridManager;
-
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,14 +12,24 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.StringJoiner;
 
-import javax.swing.*;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JSeparator;
+import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
+import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.Toolkit;
 
 public class MicroArray extends JFrame {
 
@@ -45,7 +56,7 @@ public class MicroArray extends JFrame {
 
 	private MicroArray main;
 
-	//Profile List
+	// Profile List
 	private ArrayList<GridProfile> gridProfiles = new ArrayList<>();
 
 	/**
@@ -77,7 +88,7 @@ public class MicroArray extends JFrame {
 	public MicroArray() {
 
 		super("Improved Magic Tool");
-
+		setIconImage(Toolkit.getDefaultToolkit().getImage(MicroArray.class.getResource("/icons/magic-wand-icon.png")));
 		main = this;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -375,8 +386,7 @@ public class MicroArray extends JFrame {
 								MATabPanel panel = new MATabPanel(greenPath, redPath, main);
 								tabbedPane.addTab("Sample " + counterSample++, null, panel, null);
 								panelArrayList.add(panel);
-								for (GridProfile gp: gridProfiles)
-								{
+								for (GridProfile gp : gridProfiles) {
 									panel.addToComboBox(gp.getName(), false);
 								}
 								tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
@@ -560,8 +570,6 @@ public class MicroArray extends JFrame {
 		mntmUserGuide.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, ActionEvent.CTRL_MASK));
 		mntmUserGuide.addActionListener(pickedGuide -> {
 
-			// TODO User guide code goes here.
-
 		});
 		mnHelp.add(mntmUserGuide);
 
@@ -608,17 +616,15 @@ public class MicroArray extends JFrame {
 
 	}
 
-	/**GRID PROFILE STUFF**/
-	private class GridProfile
-	{
+	/** GRID PROFILE STUFF **/
+	private class GridProfile {
 		private String myName;
 		private int myNumber;
 		private boolean myHorizontal;
 		private boolean myVertical;
 		private boolean myFirst;
 
-		public GridProfile(String name, int num, boolean hor, boolean ver, boolean first)
-		{
+		public GridProfile(String name, int num, boolean hor, boolean ver, boolean first) {
 			myName = name;
 			myNumber = num;
 			myHorizontal = hor;
@@ -626,8 +632,7 @@ public class MicroArray extends JFrame {
 			myFirst = first;
 		}
 
-		public void setAll(String name, int num, boolean hor, boolean ver, boolean first)
-		{
+		public void setAll(String name, int num, boolean hor, boolean ver, boolean first) {
 			myName = name;
 			myNumber = num;
 			myHorizontal = hor;
@@ -635,89 +640,70 @@ public class MicroArray extends JFrame {
 			myFirst = first;
 		}
 
-		public String getName()
-		{
+		public String getName() {
 			return myName;
 		}
 
-		public int getNumber()
-		{
+		public int getNumber() {
 			return myNumber;
 		}
 
-		public boolean getHorizontal()
-		{
+		public boolean getHorizontal() {
 			return myHorizontal;
 		}
 
-		public boolean getVertical()
-		{
+		public boolean getVertical() {
 			return myVertical;
 		}
 
-		public boolean getFirst()
-		{
+		public boolean getFirst() {
 			return myFirst;
 		}
 	}
 
-	protected void addGridProfile(String name, int num, boolean hor, boolean ver, boolean first)
-	{
+	protected void addGridProfile(String name, int num, boolean hor, boolean ver, boolean first) {
 		gridProfiles.add(new GridProfile(name, num, hor, ver, first));
-		for (int i = 0; i < panelArrayList.size(); ++i)
-		{
-			if (i == tabbedPane.getSelectedIndex())
-			{
+		for (int i = 0; i < panelArrayList.size(); ++i) {
+			if (i == tabbedPane.getSelectedIndex()) {
 				panelArrayList.get(i).addToComboBox(name, true);
-			}
-			else
-			{
+			} else {
 				panelArrayList.get(i).addToComboBox(name, false);
 			}
 		}
 	}
 
-	protected void removeGridProfile(int i)
-	{
-		gridProfiles.remove(i-1);
-		for (MATabPanel tp: panelArrayList)
-		{
+	protected void removeGridProfile(int i) {
+		gridProfiles.remove(i - 1);
+		for (MATabPanel tp : panelArrayList) {
 			tp.removeFromComboBox(i);
 		}
 	}
 
-	protected void modifyGridProfileName(int i, String name, int num, boolean hor, boolean ver, boolean first)
-	{
+	protected void modifyGridProfileName(int i, String name, int num, boolean hor, boolean ver, boolean first) {
 
-		gridProfiles.get(i-1).setAll(name, num, hor, ver, first);
-		for (MATabPanel tp: panelArrayList)
-		{
+		gridProfiles.get(i - 1).setAll(name, num, hor, ver, first);
+		for (MATabPanel tp : panelArrayList) {
 			tp.changeInComboBox(name, i);
 		}
 	}
 
-	protected String getGridProfileName(int i)
-	{
+	protected String getGridProfileName(int i) {
 		return gridProfiles.get(i).getName();
 	}
 
-	protected int getGridProfileNumber(int i)
-	{
-		return gridProfiles.get(i-1).getNumber();
+	protected int getGridProfileNumber(int i) {
+		return gridProfiles.get(i - 1).getNumber();
 	}
 
-	protected boolean getGridProfileHorizontal(int i)
-	{
-		return gridProfiles.get(i-1).getHorizontal();
+	protected boolean getGridProfileHorizontal(int i) {
+		return gridProfiles.get(i - 1).getHorizontal();
 	}
 
-	protected  boolean getGridProfileVertical(int i)
-	{
-		return gridProfiles.get(i-1).getVertical();
+	protected boolean getGridProfileVertical(int i) {
+		return gridProfiles.get(i - 1).getVertical();
 	}
 
-	protected boolean getGridProfileFirst(int i)
-	{
-		return gridProfiles.get(i-1).getFirst();
+	protected boolean getGridProfileFirst(int i) {
+		return gridProfiles.get(i - 1).getFirst();
 	}
 }
