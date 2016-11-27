@@ -16,7 +16,8 @@ import java.awt.image.PixelGrabber;
 import java.util.ArrayList;
 
 class MATabPanel extends JPanel {
-    public MATabPanel(String greenPath, String redPath) {
+    public MATabPanel(String greenPath, String redPath, MicroArray main) {
+        this.main = main;
         setup(greenPath, redPath);
     }
 
@@ -33,9 +34,8 @@ class MATabPanel extends JPanel {
     private ButtonGroup group1;
     private ButtonGroup group2;
     private ImageDisplayPanel imageDisplayPanel;
-
-    // TODO remove
-    private int NUMBER_OF_GRIDS = 20;
+    private MicroArray main;
+    private JComboBox<String> comboBox;
 
     private void setup(String greenPath, String redPath) {
         this.setBorder(blackline);
@@ -129,34 +129,76 @@ class MATabPanel extends JPanel {
         lblNewLabel.setBounds(10, 20, 360, 14);
         gridding.add(lblNewLabel);
 
-        String[] grids = { "Previously saved grid." };
-        JComboBox<String> comboBox = new JComboBox<String>(grids);
+        comboBox = new JComboBox<>();
+        comboBox.addItem("Previously saved grid.");
         comboBox.setBounds(10, 45, 150, 20);
         gridding.add(comboBox);
 
         JButton btnAdd = new JButton("Add");
         btnAdd.addActionListener(addBut -> {
+            MAGridSetupDialog god = new MAGridSetupDialog(main);
+            god.setOptions("", manager.getNumGrids(), manager.getLeftRight(), manager.getTopBottom(), manager.getSpotDirection());
+            god.setModal(true);
+            god.pack();
+            god.setVisible(true);
+            if(god.getOK()){
+                int numDelete = manager.getNumGrids() - god.getGridNum();
+                int cont = JOptionPane.YES_OPTION;
+                // TODO Deletion warning commented out for now
+                //if(numDelete>0) cont = JOptionPane.showConfirmDialog(this.getDesktopPane(), "Warning! You Have Selected " + numDelete + " Fewer Grids For Your Image.\nDo You Wish To Delete " + (numDelete==1? "This Grid And All Data Related To It?":"These " + numDelete + " Grids And All Data Related To Them"), "Warning! You May Be Deleting Important Data", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if(cont==JOptionPane.YES_OPTION){
+                    manager.setGridNum(god.getGridNum());
+                    manager.setLeftRight(god.getHorizontal());
+                    manager.setTopBottom(god.getVertical());
+                    manager.setSpotDirection(god.getFirstSpot());
 
-            // TODO Add button code goes here.
-
+                    updateGridCount();
+                    main.addGridProfile(god.getProfileName(), god.getGridNum(), god.getHorizontal(), god.getVertical(), god.getFirstSpot());
+                }
+            }
         });
         btnAdd.setBounds(169, 45, 60, 23);
         gridding.add(btnAdd);
 
         JButton btnModify = new JButton("Modify");
         btnModify.addActionListener(modBut -> {
-
-            // TODO Modify button code goes here.
-
+            if (comboBox.getSelectedIndex() != 0)
+            {
+                MAGridSetupDialog god = new MAGridSetupDialog(main);
+                god.setOptions(comboBox.getItemAt(comboBox.getSelectedIndex()), manager.getNumGrids(), manager.getLeftRight(), manager.getTopBottom(), manager.getSpotDirection());
+                god.setModal(true);
+                god.pack();
+                god.setVisible(true);
+                if(god.getOK()){
+                    int numDelete = manager.getNumGrids() - god.getGridNum();
+                    int cont = JOptionPane.YES_OPTION;
+                    // TODO Deletion warning commented out for now
+                    //if(numDelete>0) cont = JOptionPane.showConfirmDialog(this.getDesktopPane(), "Warning! You Have Selected " + numDelete + " Fewer Grids For Your Image.\nDo You Wish To Delete " + (numDelete==1? "This Grid And All Data Related To It?":"These " + numDelete + " Grids And All Data Related To Them"), "Warning! You May Be Deleting Important Data", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if(cont==JOptionPane.YES_OPTION){
+                        main.modifyGridProfileName(comboBox.getSelectedIndex(), god.getProfileName(), god.getGridNum(), god.getHorizontal(), god.getVertical(), god.getFirstSpot());
+                    }
+                }
+            }
         });
         btnModify.setBounds(240, 45, 75, 23);
         gridding.add(btnModify);
 
         JButton btnDelete = new JButton("Delete");
         btnDelete.addActionListener(deleteBut -> {
-
-            // TODO Delete button code goes here.
-
+            if (comboBox.getSelectedIndex() != 0)
+            {
+                int selection = JOptionPane.showOptionDialog(this,
+                        "This will delete the selected profile for all samples.\n"
+                                + "All grids connected to the profile will be removed.\n"
+                                + "This cannot be undone. Are you sure you want to delete?",
+                        "Delete Grid Profile!",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE, null, null, null);
+                if (selection == JOptionPane.OK_OPTION)
+                {
+                    main.removeGridProfile(comboBox.getSelectedIndex());
+                }
+            }
         });
         btnDelete.setBounds(324, 45, 70, 23);
         gridding.add(btnDelete);
@@ -165,14 +207,6 @@ class MATabPanel extends JPanel {
         gridScrollPane = new JScrollPane(gridScrollPanePanel);
         gridScrollPane.setBounds(10, 70, 600, 150);
         gridding.add(gridScrollPane);
-
-        // TODO remove this test code
-        manager.setGridNum(NUMBER_OF_GRIDS);
-        for (int i = 0; i < NUMBER_OF_GRIDS; i++) {
-            MAGridPanel gp = new MAGridPanel(i + 1, this);
-            gridPanelsList.add(gp);
-            gridScrollPanePanel.add(gp);
-        }
 
         // Segmentation panel starts here
 
@@ -479,5 +513,65 @@ class MATabPanel extends JPanel {
     public int yCoordinate(int ey) {
         return ((imageDisplayPanel.getCanvas().getSrcRect().y
                 + Math.round((float) ((ey) / imageDisplayPanel.getZoom()))));
+    }
+
+    public void addToComboBox(String s, boolean focused)
+    {
+        comboBox.addItem(s);
+        if (focused)
+        {
+            comboBox.setSelectedIndex(comboBox.getItemCount() - 1);
+        }
+    }
+
+    public void changeInComboBox(String s, int i)
+    {
+        boolean refocus = false;
+        if (comboBox.getSelectedIndex() == i)
+        {
+            refocus = true;
+        }
+        comboBox.removeItemAt(i);
+        comboBox.insertItemAt(s, i);
+        if (refocus)
+        {
+            comboBox.setSelectedIndex(i);
+            manager.setGridNum(main.getGridProfileNumber(i));
+            manager.setLeftRight(main.getGridProfileHorizontal(i));
+            manager.setTopBottom(main.getGridProfileVertical(i));
+            manager.setSpotDirection(main.getGridProfileFirst(i));
+            updateGridCount();
+        }
+    }
+
+    public void removeFromComboBox(int i)
+    {
+        if (i == comboBox.getSelectedIndex())
+        {
+            comboBox.setSelectedIndex(0);
+            manager.setGridNum(0);
+            updateGridCount();
+        }
+        comboBox.removeItemAt(i);
+    }
+
+    private void updateGridCount()
+    {
+        while (manager.getNumGrids() < gridPanelsList.size())
+        {
+            gridScrollPanePanel.remove(gridPanelsList.get(gridPanelsList.size()-1));
+            gridPanelsList.remove(gridPanelsList.size()-1);
+            MAGridPanel.removedOne();
+        }
+
+        while (manager.getNumGrids() > gridPanelsList.size())
+        {
+            MAGridPanel gp = new MAGridPanel(this);
+            gridPanelsList.add(gp);
+            gridScrollPanePanel.add(gp);
+        }
+
+        gridScrollPanePanel.revalidate();
+        gridScrollPanePanel.repaint();
     }
 }

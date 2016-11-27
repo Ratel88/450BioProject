@@ -1,5 +1,7 @@
 package newgui;
 
+import magictool.image.GridManager;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.BufferedReader;
@@ -9,7 +11,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.StringJoiner;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -38,6 +42,11 @@ public class MicroArray extends JFrame {
 	private ArrayList<MATabPanel> panelArrayList;
 	private JTabbedPane tabbedPane;
 	private int counterSample = 1;
+
+	private MicroArray main;
+
+	//Profile List
+	private ArrayList<GridProfile> gridProfiles = new ArrayList<>();
 
 	/**
 	 * Launch the application.
@@ -68,6 +77,8 @@ public class MicroArray extends JFrame {
 	public MicroArray() {
 
 		super("Improved Magic Tool");
+
+		main = this;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1200, 910);
@@ -361,9 +372,13 @@ public class MicroArray extends JFrame {
 
 							}
 							if (pass) {
-								MATabPanel panel = new MATabPanel(greenPath, redPath);
+								MATabPanel panel = new MATabPanel(greenPath, redPath, main);
 								tabbedPane.addTab("Sample " + counterSample++, null, panel, null);
 								panelArrayList.add(panel);
+								for (GridProfile gp: gridProfiles)
+								{
+									panel.addToComboBox(gp.getName(), false);
+								}
 								tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
 							}
 
@@ -593,4 +608,116 @@ public class MicroArray extends JFrame {
 
 	}
 
+	/**GRID PROFILE STUFF**/
+	private class GridProfile
+	{
+		private String myName;
+		private int myNumber;
+		private boolean myHorizontal;
+		private boolean myVertical;
+		private boolean myFirst;
+
+		public GridProfile(String name, int num, boolean hor, boolean ver, boolean first)
+		{
+			myName = name;
+			myNumber = num;
+			myHorizontal = hor;
+			myVertical = ver;
+			myFirst = first;
+		}
+
+		public void setAll(String name, int num, boolean hor, boolean ver, boolean first)
+		{
+			myName = name;
+			myNumber = num;
+			myHorizontal = hor;
+			myVertical = ver;
+			myFirst = first;
+		}
+
+		public String getName()
+		{
+			return myName;
+		}
+
+		public int getNumber()
+		{
+			return myNumber;
+		}
+
+		public boolean getHorizontal()
+		{
+			return myHorizontal;
+		}
+
+		public boolean getVertical()
+		{
+			return myVertical;
+		}
+
+		public boolean getFirst()
+		{
+			return myFirst;
+		}
+	}
+
+	protected void addGridProfile(String name, int num, boolean hor, boolean ver, boolean first)
+	{
+		gridProfiles.add(new GridProfile(name, num, hor, ver, first));
+		for (int i = 0; i < panelArrayList.size(); ++i)
+		{
+			if (i == tabbedPane.getSelectedIndex())
+			{
+				panelArrayList.get(i).addToComboBox(name, true);
+			}
+			else
+			{
+				panelArrayList.get(i).addToComboBox(name, false);
+			}
+		}
+	}
+
+	protected void removeGridProfile(int i)
+	{
+		gridProfiles.remove(i-1);
+		for (MATabPanel tp: panelArrayList)
+		{
+			tp.removeFromComboBox(i);
+		}
+	}
+
+	protected void modifyGridProfileName(int i, String name, int num, boolean hor, boolean ver, boolean first)
+	{
+
+		gridProfiles.get(i-1).setAll(name, num, hor, ver, first);
+		for (MATabPanel tp: panelArrayList)
+		{
+			tp.changeInComboBox(name, i);
+		}
+	}
+
+	protected String getGridProfileName(int i)
+	{
+		return gridProfiles.get(i).getName();
+	}
+
+	protected int getGridProfileNumber(int i)
+	{
+		return gridProfiles.get(i-1).getNumber();
+	}
+
+	protected boolean getGridProfileHorizontal(int i)
+	{
+		return gridProfiles.get(i-1).getHorizontal();
+	}
+
+	protected  boolean getGridProfileVertical(int i)
+	{
+		return gridProfiles.get(i-1).getVertical();
+	}
+
+	protected boolean getGridProfileFirst(int i)
+	{
+		return gridProfiles.get(i-1).getFirst();
+	}
 }
