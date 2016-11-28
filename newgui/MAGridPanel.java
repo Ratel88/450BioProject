@@ -1,5 +1,8 @@
 package newgui;
 
+import magictool.image.Grid;
+import magictool.image.GridManager;
+
 import javax.swing.*;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
@@ -60,6 +63,9 @@ class MAGridPanel extends JPanel {
 			progressMode();
 		});
 		btnAdvanced = new JButton("Advanced");
+		btnAdvanced.addActionListener(advancedButton -> {
+			openPopup();
+		});
 		btnCancel = new JButton("Cancel");
 		btnCancel.addActionListener(cancelButton -> {
 			cancelSetting();
@@ -177,7 +183,7 @@ class MAGridPanel extends JPanel {
 		updateUI();
 	}
 
-	private void cancelSetting() {
+	public void cancelSetting() {
 		mode = 0;
 		removeAll();
 		add(lblName);
@@ -188,6 +194,29 @@ class MAGridPanel extends JPanel {
 		}
 	}
 
+	private void openPopup()
+	{
+		MAGridAdvancedDialog god = new MAGridAdvancedDialog(myTabPanel.main);
+		god.setOptions(topLeftX_true, topLeftY_true, topRightX_true, topRightY_true, bottomX_true, bottomY_true,
+				columns_true, rows_true);
+		god.setModal(true);
+		god.pack();
+		god.setVisible(true);
+		if (god.getOK()) {
+			topLeftX_temp = god.tlX;
+			topLeftY_temp = god.tlY;
+			topRightX_temp = god.trX;
+			topRightY_temp = god.trY;
+			bottomX_temp = god.bX;
+			bottomY_temp = god.bY;
+			columns_temp = god.columns;
+			rows_temp = god.rows;
+			commitValues();
+		}
+	}
+
+	//Values are set to not allow rotating
+	//Logic will need to be changed if rotation added
 	private void commitValues() {
 		topLeftX_true = topLeftX_temp;
 		topLeftY_true = topLeftY_temp;
@@ -197,7 +226,7 @@ class MAGridPanel extends JPanel {
 		bottomY_true = bottomY_temp;
 		rows_true = rows_temp;
 		columns_true = columns_temp;
-		myTabPanel.drawGrid(myNumber, topLeftX_true, topLeftY_true, topRightX_true, topRightY_true, bottomX_true,
+		myTabPanel.drawGrid(myNumber, topLeftX_true, topLeftY_true, topRightX_true, topLeftY_true, bottomX_true,
 				bottomY_true, rows_true, columns_true);
 	}
 

@@ -41,7 +41,7 @@ class MATabPanel extends JPanel {
 	private ButtonGroup group1;
 	private ButtonGroup group2;
 	private ImageDisplayPanel imageDisplayPanel;
-	private MicroArray main;
+	protected MicroArray main;
 	private JComboBox<String> comboBox;
 
 	public JScrollPane scrollGreen;
@@ -598,6 +598,7 @@ class MATabPanel extends JPanel {
 
 		gridScrollPanePanel.revalidate();
 		gridScrollPanePanel.repaint();
+		imageDisplayPanel.repaint();
 	}
 
 	private void segmentationMode(Image greenImage, Image redImage, JPanel target) {
