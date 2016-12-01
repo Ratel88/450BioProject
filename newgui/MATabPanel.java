@@ -377,8 +377,8 @@ class MATabPanel extends JPanel {
 
 		SpinnerModel spinnerSpot = new SpinnerNumberModel(1, // initial
 				// value
-				0, // min
-				100, // max
+				1, // min
+				552, // max
 				1);// step
 
 		JSpinner spnSpot = new JSpinner(spinnerSpot);
