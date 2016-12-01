@@ -254,10 +254,10 @@ public class ImageDisplayPanel extends JPanel {
             g.drawPolygon(horiLines[h]);
           }
           g.setColor(Color.LIGHT_GRAY);
-          int h = GridMoverAdapter.height/4;
+          //int h = GridMoverAdapter.height/4;
           
-          GridMoverAdapter.updateRectangles();
-          for(int z=0;z<4;z++) g.fillOval(screenX(GridMoverAdapter.vertices[z].x)-h/2, screenY(GridMoverAdapter.vertices[z].y)-h/2, h, h);
+          //GridMoverAdapter.updateRectangles();
+          //for(int z=0;z<4;z++) g.fillOval(screenX(GridMoverAdapter.vertices[z].x)-h/2, screenY(GridMoverAdapter.vertices[z].y)-h/2, h, h);
         }else{
           g.setColor(Color.white);
         	//Draw other grids.

@@ -1,10 +1,8 @@
 package newgui;
 
+import ij.ImagePlus;
 import ij.io.Opener;
-import magictool.image.Grid;
-import magictool.image.GridManager;
-import magictool.image.ImageDisplayPanel;
-import magictool.image.SegmentDisplay;
+import magictool.image.*;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -43,11 +41,15 @@ class MATabPanel extends JPanel {
 	private ImageDisplayPanel imageDisplayPanel;
 	protected MicroArray main;
 	private JComboBox<String> comboBox;
+	private JSlider slidderSeededThreshold;
 
 	public JScrollPane scrollGreen;
 	private JScrollPane scrollRed;
 	private JPanel greenPanel = new JPanel();
 	private JPanel redPanel = new JPanel();
+	private ImagePlus ipGrn;
+	private ImagePlus ipRed;
+	private int segmentMode;
 
 	public JSplitPane jSplitPaneVert = new JSplitPane();
 
@@ -326,11 +328,14 @@ class MATabPanel extends JPanel {
 		Opener redImage = new Opener();
 		Image green = greenImage.openImage(greenPath).getImage();
 		Image red = redImage.openImage(redPath).getImage();
+		ipGrn = greenImage.openImage(greenPath);
+		ipRed = redImage.openImage(redPath);
 
 		JRadioButton rdbtnNewRadioButton = new JRadioButton("Adaptive Circle");
 		rdbtnNewRadioButton.setBounds(310, 16, 110, 23);
 		rdbtnNewRadioButton.addActionListener(adaptiveCircle -> {
 			segmentationMode(green, red, segment);
+			segmentMode = 2;
 		});
 		segment.add(rdbtnNewRadioButton);
 
@@ -338,6 +343,7 @@ class MATabPanel extends JPanel {
 		rdbtnNewRadioButton_1.setBounds(420, 16, 160, 23);
 		rdbtnNewRadioButton_1.addActionListener(seededRegionButton -> {
 			segmentationMode(green, red, segment);
+			segmentMode = 1;
 		});
 
 		segment.add(rdbtnNewRadioButton_1);
@@ -379,18 +385,26 @@ class MATabPanel extends JPanel {
 		spnSpot.setBounds(480, 150, 40, 20);
 		segment.add(spnSpot);
 
-		spnSpot.addChangeListener(changePosition -> moveTo((Integer) spnGrid.getValue(), (Integer) spnSpot.getValue()));
+		spnSpot.addChangeListener(changePosition -> {
+			moveTo((Integer) spnGrid.getValue(), (Integer) spnSpot.getValue());
+			updateGeneInfo(segmentMode);
+		});
 		JCheckBox chckbxNewCheckBox = new JCheckBox("Flag spot");
 		chckbxNewCheckBox.setBounds(530, 150, 97, 23);
 		segment.add(chckbxNewCheckBox);
 
-		JSlider slider_1 = new JSlider(JSlider.HORIZONTAL, 0, 10, 0);
-		slider_1.setMajorTickSpacing(10);
-		slider_1.setMinorTickSpacing(1);
-		slider_1.setPaintTicks(true);
-		slider_1.setPaintLabels(true);
-		slider_1.setBounds(500, 50, 100, 40);
-		segment.add(slider_1);
+		slidderSeededThreshold = new JSlider(JSlider.HORIZONTAL, 5, 50, 10);
+		slidderSeededThreshold.setMajorTickSpacing(15);
+		slidderSeededThreshold.setMinorTickSpacing(5);
+		slidderSeededThreshold.setPaintTicks(true);
+		slidderSeededThreshold.setPaintLabels(true);
+		slidderSeededThreshold.setBounds(500, 50, 150, 40);
+		segment.add(slidderSeededThreshold);
+		slidderSeededThreshold.addChangeListener(seededThresholdChange -> {
+			updateGeneInfo(segmentMode);
+			sdGreenSlide.repaint();
+			sdRedSlide.repaint();
+		});
 
 		JLabel lblGreen = new JLabel("Green");
 		lblGreen.setBounds(90, 250, 40, 14);
@@ -662,12 +676,27 @@ class MATabPanel extends JPanel {
 	private void segmentationMode(Image greenImage, Image redImage, JPanel target) {
 
 		if (sdGreenSlide == null) {
+			int[][] grnPixels = new int[ipGrn.getHeight()][ipGrn.getWidth()];
+			int[][] redPixels = new int[ipRed.getHeight()][ipRed.getWidth()];
+			for(int i=0; i<(int)ipGrn.getHeight(); i++){
+				for (int j=0; j<(int)ipGrn.getWidth(); j++){
+					grnPixels[i][j]=ipGrn.getProcessor().getPixel(j,i);
+				}
+			}
+			for(int i = 0; i < (int)ipRed.getHeight(); i++) {
+				for(int j = 0; j < (int)ipRed.getWidth(); j++) {
+					redPixels[i][j] = ipRed.getProcessor().getPixel(j,i);
+				}
+			}
+
 
 			sdGreenSlide = new SegmentDisplay(greenImage, manager);
 			sdGreenSlide.setBounds(-10, -50, 200, 200);
+			sdGreenSlide.RawPixels = grnPixels;
 
 			sdRedSlide = new SegmentDisplay(redImage, manager);
 			sdRedSlide.setBounds(-20, -100, 200, 200);
+			sdRedSlide.RawPixels = redPixels;
 
 			scrollGreen = new JScrollPane(sdGreenSlide);
 			scrollGreen.setBounds(10, 45, 200, 200);
@@ -685,9 +714,10 @@ class MATabPanel extends JPanel {
 			sdRedSlide.zoom(10);
 			sdGreenSlide.zoom(10);
 
+			//manager.getCurrentGrid().setCurrentSpot(1);
 			// zoomToCell();
 			showCurrentCell();
-
+			updateGeneInfo(segmentMode);
 		}
 
 	}
@@ -760,4 +790,44 @@ class MATabPanel extends JPanel {
 		cellHeight = cell.ypoints[3] - cell.ypoints[0];
 	}
 
+	protected void updateGeneInfo(int i){
+		SingleGeneImage currentGene = new SingleGeneImage(sdRedSlide.getCellPixels(),sdGreenSlide.getCellPixels(),
+				sdRedSlide.getCellHeight(), sdRedSlide.getCellWidth());
+
+		if(i == 1){//methodCombo.getSelectedItem().toString().equals("Seeded Region Growing")){
+			Object[] params = new Object[1];
+			params[0] = slidderSeededThreshold.getValue();
+			currentGene.getData(SingleGeneImage.SEEDED_REGION, params);
+			sdRedSlide.setSeededRegion(currentGene.getCenterSpots(true));
+			sdGreenSlide.setSeededRegion(currentGene.getCenterSpots(false));
+		}
+
+		else if(i == 2){
+			int minr, maxr;
+			try{
+				minr = 2;
+				maxr = 8;
+				/*if(minr<1||maxr<1||minr>maxr){
+					JOptionPane.showMessageDialog(segframe.getDesktopPane(), "Radii Must Be Positive Integer Values.\nThe Maximum Radius Must Also Be Greater Than Or Equal To The Minimum Radius.\nThe Radii Have Been Reset To The Default Values Of 3 and 8.", "Incorrect Entry!", JOptionPane.ERROR_MESSAGE);
+					minr=3;
+					maxr=8;
+					minradiusField.setText(""+3);
+					maxradiusField.setText(""+8);
+				}*/
+			}catch(Exception e){
+				minr=3;
+				maxr=8;
+				//minradiusField.setText(""+3);
+				//maxradiusField.setText(""+8);
+				//JOptionPane.showMessageDialog(segframe.getDesktopPane(), "Radii Must Be Positive Integer Values.\nThe Radii Have Been Reset To The Default Values Of 3 and 8.", "Incorrect Entry!", JOptionPane.ERROR_MESSAGE);
+			}
+			Object[] params = new Object[3];
+			params[0] = new Integer(minr);
+			params[1] = new Integer(maxr);
+			params[2] = slidderSeededThreshold.getValue();
+			currentGene.getData(SingleGeneImage.ADAPTIVE_CIRCLE, params);
+			sdRedSlide.setAdaptiveCircle(currentGene.getCenterAndRadius());
+			sdGreenSlide.setAdaptiveCircle(currentGene.getCenterAndRadius());
+		}
+	}
 }
