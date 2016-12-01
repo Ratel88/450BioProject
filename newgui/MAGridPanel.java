@@ -48,10 +48,8 @@ class MAGridPanel extends JPanel {
 
 	private MATabPanel myTabPanel;
 
-	private static int number = 0;
-
-	public MAGridPanel(MATabPanel tab_panel) {
-		myNumber = ++number;
+	public MAGridPanel(MATabPanel tab_panel, int num) {
+		myNumber = num;
 		myTabPanel = tab_panel;
 		setup();
 	}
@@ -228,9 +226,5 @@ class MAGridPanel extends JPanel {
 		columns_true = columns_temp;
 		myTabPanel.drawGrid(myNumber, topLeftX_true, topLeftY_true, topRightX_true, topLeftY_true, bottomX_true,
 				bottomY_true, rows_true, columns_true);
-	}
-
-	public static void removedOne() {
-		--number;
 	}
 }

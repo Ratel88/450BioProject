@@ -53,6 +53,10 @@ class MATabPanel extends JPanel {
 
 	protected double cellHeight;
 
+	private int gridCount = 0;
+	private int selectedProfileNum = 0;
+	private boolean comboboxIsChanging = false;
+
 	/** polygon containing the coordinates of current spot cell */
 	protected Polygon cell;
 	private int w, h, newTopLeftX, newTopLeftY, gridNum, spotNum;
@@ -152,6 +156,51 @@ class MATabPanel extends JPanel {
 		comboBox = new JComboBox<>();
 		comboBox.addItem("Previously saved grid.");
 		comboBox.setBounds(10, 45, 150, 20);
+		comboBox.addActionListener(changedSelection -> {
+			if (!comboboxIsChanging && comboBox.getSelectedIndex() != selectedProfileNum)
+			{
+				if (comboBox.getSelectedIndex() == 0)
+				{
+					comboBox.setSelectedIndex(selectedProfileNum);
+				}
+				else
+				{
+					comboboxIsChanging = true;
+					if (selectedProfileNum != 0)
+					{
+						int selection = JOptionPane.showOptionDialog(this,
+								"Changing the profile may remove grids from this sample.\n"
+										+ "This cannot be undone. Are you sure you want to change the profile?",
+								"Profile Change!", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, null,
+								null);
+						if (selection == JOptionPane.OK_OPTION) {
+							int i = comboBox.getSelectedIndex();
+							manager.setGridNum(main.getGridProfileNumber(i));
+							manager.setLeftRight(main.getGridProfileHorizontal(i));
+							manager.setTopBottom(main.getGridProfileVertical(i));
+							manager.setSpotDirection(main.getGridProfileFirst(i));
+							selectedProfileNum = i;
+							updateGridCount();
+						}
+						else
+						{
+							comboBox.setSelectedIndex(selectedProfileNum);
+						}
+					}
+					else
+					{
+						int i = comboBox.getSelectedIndex();
+						manager.setGridNum(main.getGridProfileNumber(i));
+						manager.setLeftRight(main.getGridProfileHorizontal(i));
+						manager.setTopBottom(main.getGridProfileVertical(i));
+						manager.setSpotDirection(main.getGridProfileFirst(i));
+						selectedProfileNum = i;
+						updateGridCount();
+					}
+					comboboxIsChanging = false;
+				}
+			}
+		});
 		gridding.add(comboBox);
 
 		JButton btnAdd = new JButton("Add");
@@ -163,6 +212,7 @@ class MATabPanel extends JPanel {
 			god.pack();
 			god.setVisible(true);
 			if (god.getOK()) {
+				comboboxIsChanging = true;
 				int numDelete = manager.getNumGrids() - god.getGridNum();
 				int cont = JOptionPane.YES_OPTION;
 				// TODO Deletion warning commented out for now
@@ -184,6 +234,8 @@ class MATabPanel extends JPanel {
 					main.addGridProfile(god.getProfileName(), god.getGridNum(), god.getHorizontal(), god.getVertical(),
 							god.getFirstSpot());
 				}
+				selectedProfileNum = comboBox.getItemCount()-1;
+				comboboxIsChanging = false;
 			}
 		});
 		btnAdd.setBounds(169, 45, 60, 23);
@@ -199,6 +251,7 @@ class MATabPanel extends JPanel {
 				god.pack();
 				god.setVisible(true);
 				if (god.getOK()) {
+					comboboxIsChanging = true;
 					int numDelete = manager.getNumGrids() - god.getGridNum();
 					int cont = JOptionPane.YES_OPTION;
 					// TODO Deletion warning commented out for now
@@ -214,6 +267,7 @@ class MATabPanel extends JPanel {
 						main.modifyGridProfileName(comboBox.getSelectedIndex(), god.getProfileName(), god.getGridNum(),
 								god.getHorizontal(), god.getVertical(), god.getFirstSpot());
 					}
+					comboboxIsChanging = false;
 				}
 			}
 		});
@@ -223,6 +277,7 @@ class MATabPanel extends JPanel {
 		JButton btnDelete = new JButton("Delete");
 		btnDelete.addActionListener(deleteBut -> {
 			if (comboBox.getSelectedIndex() != 0) {
+				comboboxIsChanging = true;
 				int selection = JOptionPane.showOptionDialog(this,
 						"This will delete the selected profile for all samples.\n"
 								+ "All grids connected to the profile will be removed.\n"
@@ -232,6 +287,8 @@ class MATabPanel extends JPanel {
 				if (selection == JOptionPane.OK_OPTION) {
 					main.removeGridProfile(comboBox.getSelectedIndex());
 				}
+				selectedProfileNum = 0;
+				comboboxIsChanging = false;
 			}
 		});
 		btnDelete.setBounds(324, 45, 70, 23);
@@ -239,7 +296,7 @@ class MATabPanel extends JPanel {
 
 		gridScrollPanePanel = new JPanel();
 		gridScrollPane = new JScrollPane(gridScrollPanePanel);
-		gridScrollPane.setBounds(10, 70, 600, 150);
+		gridScrollPane.setBounds(10, 70, 600, 100);
 		gridding.add(gridScrollPane);
 
 		// Segmentation panel starts here
@@ -587,11 +644,12 @@ class MATabPanel extends JPanel {
 		while (manager.getNumGrids() < gridPanelsList.size()) {
 			gridScrollPanePanel.remove(gridPanelsList.get(gridPanelsList.size() - 1));
 			gridPanelsList.remove(gridPanelsList.size() - 1);
-			MAGridPanel.removedOne();
+			gridCount--;
 		}
 
 		while (manager.getNumGrids() > gridPanelsList.size()) {
-			MAGridPanel gp = new MAGridPanel(this);
+			gridCount++;
+			MAGridPanel gp = new MAGridPanel(this, gridCount);
 			gridPanelsList.add(gp);
 			gridScrollPanePanel.add(gp);
 		}
