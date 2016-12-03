@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 class MATabPanel extends JPanel {
@@ -26,16 +27,20 @@ class MATabPanel extends JPanel {
 	private SegmentDisplay sdGreenSlide;
 	private SegmentDisplay sdRedSlide;
 
+    private DecimalFormat df = new DecimalFormat("###.####");
+	private GeneData gd;
+	protected int ratioMethod = SingleGeneImage.TOTAL_SIGNAL;
+
 	private JScrollPane gridScrollPane;
 	private JPanel gridScrollPanePanel;
 	private ArrayList<MAGridPanel> gridPanelsList = new ArrayList<>();
 	private GridManager manager = new GridManager();
 	private Border blackline = BorderFactory.createLineBorder(Color.black);
-	private JTextField textField_1;
-	private JTextField textField_2;
-	private JTextField textField_3;
-	private JTextField textField_4;
-	private JTextField textField_5;
+	private JTextArea textArea_1;
+	private JTextArea textArea_2;
+	private JTextArea textArea_3;
+	private JTextArea textArea_4;
+	private JTextArea textArea_5;
 	private ButtonGroup group1;
 	private ButtonGroup group2;
 	private ImageDisplayPanel imageDisplayPanel;
@@ -51,7 +56,12 @@ class MATabPanel extends JPanel {
 	private ImagePlus ipRed;
 	private int segmentMode;
 
-	public JSplitPane jSplitPaneVert = new JSplitPane();
+    /**Automatic Flagging Options Dialog associated with the SegmentFrame associated with this SegmentPanel*/
+    protected AutoFlaggingOptionsDialog afod;
+    /**flag manager associated with these grids*/
+    protected FlagManager flagman;
+
+    public JSplitPane jSplitPaneVert = new JSplitPane();
 
 	protected double cellHeight;
 
@@ -459,65 +469,58 @@ class MATabPanel extends JPanel {
 		lblNewLabel_3.setBounds(10, 60, 350, 14);
 		expression.add(lblNewLabel_3);
 
-		String[] signal = { "Total signal." };
+		String[] signal = { "Total Signal", "Average Signal", "Total Signal BG Subtraction", "Average Signal BG Subtraction" };
 		JComboBox<String> comboBox_1 = new JComboBox<String>(signal);
-		comboBox_1.setBounds(360, 58, 100, 20);
+		comboBox_1.setBounds(360, 58, 200, 20);
 		expression.add(comboBox_1);
 
-		JLabel lblSpinnerGrid_2 = new JLabel("Grid:");
-		lblSpinnerGrid_2.setBounds(470, 58, 35, 14);
-		expression.add(lblSpinnerGrid_2);
+        comboBox_1.addActionListener(combo_1 -> {
+            switch (comboBox_1.getSelectedIndex()) {
+                case 0:
+                    ratioMethod = SingleGeneImage.TOTAL_SIGNAL;
+                    break;
+                case 1:
+                    ratioMethod = SingleGeneImage.AVG_SIGNAL;
+                    break;
+                case 2:
+                    ratioMethod = SingleGeneImage.TOTAL_SUBTRACT_BG;
+                    break;
+                case 3:
+                    ratioMethod = SingleGeneImage.AVG_SUBTRACT_BG;
+                    break;
 
-		SpinnerModel spinnerModel_2 = new SpinnerNumberModel(10, // initial
-				// value
-				0, // min
-				100, // max
-				1);// step
+                }
+            updateGeneInfo(segmentMode);
 
-		JSpinner spinner_2 = new JSpinner(spinnerModel_2);
-		spinner_2.setBounds(500, 58, 40, 20);
-		expression.add(spinner_2);
+            });
 
-		JLabel lblSpinnerSpot_2 = new JLabel("Spot:");
-		lblSpinnerSpot_2.setBounds(545, 58, 35, 14);
-		expression.add(lblSpinnerSpot_2);
-
-		SpinnerModel spinnerModel_3 = new SpinnerNumberModel(10, // initial
-				// value
-				0, // min
-				100, // max
-				1);// step
-
-		JSpinner spinner_3 = new JSpinner(spinnerModel_3);
-		spinner_3.setBounds(578, 58, 40, 20);
-		expression.add(spinner_3);
 
 		JCheckBox chckbxNewCheckBox_1 = new JCheckBox("Flag spot");
 		chckbxNewCheckBox_1.setBounds(560, 150, 97, 23);
 		expression.add(chckbxNewCheckBox_1);
 
-		textField_3 = new JTextField();
-		textField_3.setBounds(10, 105, 140, 140);
-		expression.add(textField_3);
-		textField_3.setColumns(10);
+		textArea_3 = new JTextArea();
+		textArea_3.setBounds(10, 85, 140, 140);
+		expression.add(textArea_3);
+		textArea_3.setColumns(10);
 
 		JLabel lblGreen_1 = new JLabel("Green");
 		lblGreen_1.setBounds(60, 250, 40, 14);
 		expression.add(lblGreen_1);
 
-		textField_4 = new JTextField();
-		textField_4.setBounds(215, 105, 140, 140);
-		expression.add(textField_4);
-		textField_4.setColumns(10);
+		textArea_4 = new JTextArea();
+		textArea_4.setBounds(215, 85, 140, 140);
+		expression.add(textArea_4);
+		textArea_4.setColumns(10);
 
 		JLabel lblRed_1 = new JLabel("Red");
 		lblRed_1.setBounds(280, 250, 40, 14);
 		expression.add(lblRed_1);
 
-		textField_5 = new JTextField();
-		textField_5.setBounds(410, 105, 140, 140);
-		expression.add(textField_5);
-		textField_5.setColumns(10);
+		textArea_5 = new JTextArea();
+		textArea_5.setBounds(410, 85, 140, 140);
+		expression.add(textArea_5);
+		textArea_5.setColumns(10);
 
 		JLabel lblCombined = new JLabel("Combined");
 		lblCombined.setBounds(450, 250, 100, 14);
@@ -794,10 +797,27 @@ class MATabPanel extends JPanel {
 		SingleGeneImage currentGene = new SingleGeneImage(sdRedSlide.getCellPixels(),sdGreenSlide.getCellPixels(),
 				sdRedSlide.getCellHeight(), sdRedSlide.getCellWidth());
 
+
+/*        boolean flagStatus = flagman.checkFlag(gridNum, spotNum);
+        int[] autoThresh;
+        if (afod.getOK()) autoThresh = afod.getThresholds();
+        else{
+            autoThresh = new int[4];
+            autoThresh[0] = -1;
+            autoThresh[1] = Integer.MAX_VALUE;
+            autoThresh[2] = -1;
+            autoThresh[3] = Integer.MAX_VALUE;
+        }
+*/
+
+		gd = null;
+
+
+
 		if(i == 1){//methodCombo.getSelectedItem().toString().equals("Seeded Region Growing")){
 			Object[] params = new Object[1];
 			params[0] = slidderSeededThreshold.getValue();
-			currentGene.getData(SingleGeneImage.SEEDED_REGION, params);
+			gd = currentGene.getData(SingleGeneImage.SEEDED_REGION, params);
 			sdRedSlide.setSeededRegion(currentGene.getCenterSpots(true));
 			sdGreenSlide.setSeededRegion(currentGene.getCenterSpots(false));
 		}
@@ -825,9 +845,31 @@ class MATabPanel extends JPanel {
 			params[0] = new Integer(minr);
 			params[1] = new Integer(maxr);
 			params[2] = slidderSeededThreshold.getValue();
-			currentGene.getData(SingleGeneImage.ADAPTIVE_CIRCLE, params);
+			gd = currentGene.getData(SingleGeneImage.ADAPTIVE_CIRCLE, params);
 			sdRedSlide.setAdaptiveCircle(currentGene.getCenterAndRadius());
 			sdGreenSlide.setAdaptiveCircle(currentGene.getCenterAndRadius());
 		}
+
+		if(gd!=null){
+
+            String flagText = "N/A";
+//			if(flagStatus) flagText = "<html>Flagging Status: <font color=\"#0000FF\">MANUALLY FLAGGED</font></html>";
+//			else if ((gd.getRedForegroundTotal() < autoThresh[0]) || (gd.getRedBackgroundTotal() > autoThresh[1]) || (gd.getGreenForegroundTotal() < autoThresh[2]) || (gd.getGreenBackgroundTotal() > autoThresh[3])) flagText = "<html>Flagging Status: <font color=\"FF9900\">AUTOMATICALLY FLAGGED</font></html>";
+//			else flagText = "Flagging Status: Not Flagged";
+
+			if(ratioMethod==SingleGeneImage.TOTAL_SIGNAL||ratioMethod==SingleGeneImage.TOTAL_SUBTRACT_BG) {
+                textArea_3.setText("Green BG Total: " + df.format(gd.getGreenBackgroundTotal()) + "\nGreen FG Total: " + df.format(gd.getGreenForegroundTotal()) + "\nRed BG Total: " + df.format(gd.getRedBackgroundTotal()) + "\nRed FG Total: " + df.format(gd.getRedForegroundTotal()));
+            }
+			 else{
+				textArea_3.setText("Green BG Avg: " + df.format(gd.getGreenBackgroundAvg()) + "\nGreen FG Avg: " + df.format(gd.getGreenForegroundAvg()) + "\nRed BG Avg: " + df.format(gd.getRedBackgroundAvg()) + "\nRed FG Avg: " + df.format(gd.getRedForegroundAvg()));
+            }
+            textArea_3.setText(textArea_3.getText() + "\nRatio: " + df.format(gd.getRatio(ratioMethod)));
+            textArea_3.setText(textArea_3.getText() + "\nFlagging Status: " + flagText);
+
+
+		} else{
+			textArea_4.setText("Ratio: N/A \nGreen Background: N/A \nGreen Foreground: N/A \nRed Background: N/A \nRed Foreground: N/A");
+		}
+
 	}
 }
