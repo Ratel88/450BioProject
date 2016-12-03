@@ -49,6 +49,7 @@ public class MicroArray extends JFrame {
 	private String exportFileNamePath;
 
 	String[] dataArray;
+	String CSVData;
 
 	private ArrayList<MATabPanel> panelArrayList;
 	private JTabbedPane tabbedPane;
@@ -141,7 +142,7 @@ public class MicroArray extends JFrame {
 								filter = new FileNameExtensionFilter("Text file", "txt");
 								chooser.setFileFilter(filter);
 
-								chooser.showSaveDialog(null);
+								chooser.showOpenDialog(null);
 								File f = chooser.getSelectedFile();
 								String openFileNamePath = f.getAbsolutePath();
 
@@ -165,10 +166,11 @@ public class MicroArray extends JFrame {
 
 								} finally {
 
-									dataArray = lines.toArray(new String[0]);
-
+									String[] data = lines.toArray(new String[0]);
 									readData.close();
-									// testData();
+
+									ArrayToCSV.arrayChopper(data);
+									CSVData = ArrayToCSV.getCSV();
 
 								}
 
@@ -437,40 +439,16 @@ public class MicroArray extends JFrame {
 
 							try {
 
-								filter = new FileNameExtensionFilter("Text file", "txt");
+								filter = new FileNameExtensionFilter("Comma Separated Values file", "csv");
 								chooser.setFileFilter(filter);
 
 								chooser.showSaveDialog(null);
 								File f = chooser.getSelectedFile();
 								String exportFileNamePath = f.getAbsolutePath();
 
-								FileWriter writeCSV = new FileWriter(exportFileNamePath);
+								CSVWriter.saveCSV(CSVData, exportFileNamePath);
 
-								try {
-
-									for (int i = 0; i < dataArray.length; i++) {
-
-										writeCSV.write(dataArray[i] + "\n");
-
-									}
-
-								} catch (IOException e) {
-
-									e.printStackTrace();
-
-								}
-
-								try {
-
-									writeCSV.flush();
-									writeCSV.close();
-
-								} catch (IOException e) {
-
-									e.printStackTrace();
-								}
-
-							} catch (NullPointerException | IOException ex) {
+							} catch (NullPointerException ex) {
 
 								JOptionPane.showMessageDialog(null, "No file selected.", "File warning",
 										JOptionPane.WARNING_MESSAGE);
