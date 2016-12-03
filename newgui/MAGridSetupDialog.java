@@ -135,7 +135,9 @@ public class MAGridSetupDialog extends JDialog {
 		gridNumLabel.setText("How many grids?");
 		nameField.setColumns(20);
 		nameField.getCaret().setVisible(true);
+		nameField.setText("New Profile");
 		gridNum.setColumns(20);
+		gridNum.setText("1");
 		okButton.setText("OK");
 		this.getRootPane().setDefaultButton(okButton);
 		okButton.addActionListener(okSelected -> {
@@ -267,12 +269,20 @@ public class MAGridSetupDialog extends JDialog {
 	 */
 	public void setOptions(String name, int grids, boolean leftRight, boolean topBottom, boolean spotDirection) {
 		this.name = name;
+		if (this.name.equals(""))
+		{
+			this.name = "New Profile";
+		}
 		this.grids = grids;
+		if (this.grids == 0)
+		{
+			this.grids = 1;
+		}
 		horizontal = leftRight;
 		vertical = topBottom;
 		firsth = spotDirection;
-		nameField.setText("" + name);
-		gridNum.setText("" + grids);
+		nameField.setText("" + this.name);
+		gridNum.setText("" + this.grids);
 		left2Right.setSelected(horizontal);
 		top2Bottom.setSelected(vertical);
 		horizDirection.setSelected(firsth);
@@ -299,16 +309,22 @@ public class MAGridSetupDialog extends JDialog {
 			firsth = horizDirection.isSelected();
 			if (grids > 0) {
 				ok = true;
-			} else
+			} else {
 				JOptionPane.showMessageDialog(this, "Error! There Must Be At Least One Grid");
+				ok = false;
+			}
 		} catch (NumberFormatException e1) {
 			JOptionPane.showMessageDialog(this, "Please Enter Integer Value For Number Of Grids");
+			grids = 0;
 		}
 		String str = nameField.getText();
 		if (str.length() > 0) {
-			name = str;
-			ok = true;
-			this.dispose();
+			if (grids > 0)
+			{
+				name = str;
+				ok = true;
+				this.dispose();
+			}
 		} else {
 			JOptionPane.showMessageDialog(this, "Error! Profile Must Have A Name");
 			ok = false;
