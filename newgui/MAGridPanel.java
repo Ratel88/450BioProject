@@ -168,6 +168,7 @@ class MAGridPanel extends JPanel {
 			add(btnAdvanced);
 			setFlag = true;
 			commitValues();
+            myTabPanel.refreshSegmentation();
 			break;
 		case 7:
 			mode = 0;
@@ -210,6 +211,7 @@ class MAGridPanel extends JPanel {
 			columns_temp = god.columns;
 			rows_temp = god.rows;
 			commitValues();
+            myTabPanel.refreshSegmentation();
 		}
 	}
 

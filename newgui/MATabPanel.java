@@ -47,6 +47,9 @@ class MATabPanel extends JPanel {
 	protected MicroArray main;
 	private JComboBox<String> comboBox;
 	private JSlider slidderSeededThreshold;
+	private JSpinner spnGrid;
+	private JSpinner spnSpot;
+	private JPanel segment;
 
 	public JScrollPane scrollGreen;
 	private JScrollPane scrollRed;
@@ -68,6 +71,7 @@ class MATabPanel extends JPanel {
 	private int gridCount = 0;
 	private int selectedProfileNum = 0;
 	private boolean comboboxIsChanging = false;
+	private boolean segmentationIsChanging = false;
 
 	/** polygon containing the coordinates of current spot cell */
 	protected Polygon cell;
@@ -313,7 +317,7 @@ class MATabPanel extends JPanel {
 
 		// Segmentation panel starts here
 
-		JPanel segment = new JPanel();
+		segment = new JPanel();
 		TitledBorder seg_title = BorderFactory.createTitledBorder(blackline, "Segmentation");
 		seg_title.setTitleJustification(TitledBorder.LEFT);
 		segment.setBorder(seg_title);
@@ -346,6 +350,7 @@ class MATabPanel extends JPanel {
 		rdbtnNewRadioButton.addActionListener(adaptiveCircle -> {
 			segmentationMode(green, red, segment);
 			segmentMode = 2;
+			refreshSegmentation();
 		});
 		segment.add(rdbtnNewRadioButton);
 
@@ -354,6 +359,7 @@ class MATabPanel extends JPanel {
 		rdbtnNewRadioButton_1.addActionListener(seededRegionButton -> {
 			segmentationMode(green, red, segment);
 			segmentMode = 1;
+			refreshSegmentation();
 		});
 
 		segment.add(rdbtnNewRadioButton_1);
@@ -373,13 +379,20 @@ class MATabPanel extends JPanel {
 		segment.add(lblSpinnerGrid);
 
 		SpinnerModel spinnerGrid = new SpinnerNumberModel(1, // initial value
-				0, // min
+				1, // min
 				100, // max
 				1);// step
 
-		JSpinner spnGrid = new JSpinner(spinnerGrid);
+		spnGrid = new JSpinner(spinnerGrid);
 		spnGrid.setBounds(480, 110, 40, 20);
 		segment.add(spnGrid);
+
+		spnGrid.addChangeListener(changePosition -> {
+			if (sdGreenSlide != null && !segmentationIsChanging) {
+				moveTo((Integer) spnGrid.getValue(), (Integer) spnSpot.getValue());
+				updateGeneInfo(segmentMode);
+			}
+		});
 
 		JLabel lblSpinnerSpot = new JLabel("Spot");
 		lblSpinnerSpot.setBounds(430, 150, 40, 14);
@@ -391,13 +404,15 @@ class MATabPanel extends JPanel {
 				552, // max
 				1);// step
 
-		JSpinner spnSpot = new JSpinner(spinnerSpot);
+		spnSpot = new JSpinner(spinnerSpot);
 		spnSpot.setBounds(480, 150, 40, 20);
 		segment.add(spnSpot);
 
 		spnSpot.addChangeListener(changePosition -> {
-			moveTo((Integer) spnGrid.getValue(), (Integer) spnSpot.getValue());
-			updateGeneInfo(segmentMode);
+			if (sdGreenSlide != null && !segmentationIsChanging) {
+				moveTo((Integer) spnGrid.getValue(), (Integer) spnSpot.getValue());
+				updateGeneInfo(segmentMode);
+			}
 		});
 		JCheckBox chckbxNewCheckBox = new JCheckBox("Flag spot");
 		chckbxNewCheckBox.setBounds(530, 150, 97, 23);
@@ -411,9 +426,11 @@ class MATabPanel extends JPanel {
 		slidderSeededThreshold.setBounds(500, 50, 150, 40);
 		segment.add(slidderSeededThreshold);
 		slidderSeededThreshold.addChangeListener(seededThresholdChange -> {
-			updateGeneInfo(segmentMode);
-			sdGreenSlide.repaint();
-			sdRedSlide.repaint();
+			if (sdGreenSlide != null) {
+				updateGeneInfo(segmentMode);
+				sdGreenSlide.repaint();
+				sdRedSlide.repaint();
+			}
 		});
 
 		JLabel lblGreen = new JLabel("Green");
@@ -475,29 +492,25 @@ class MATabPanel extends JPanel {
 		expression.add(comboBox_1);
 
         comboBox_1.addActionListener(combo_1 -> {
-            switch (comboBox_1.getSelectedIndex()) {
-                case 0:
-                    ratioMethod = SingleGeneImage.TOTAL_SIGNAL;
-                    break;
-                case 1:
-                    ratioMethod = SingleGeneImage.AVG_SIGNAL;
-                    break;
-                case 2:
-                    ratioMethod = SingleGeneImage.TOTAL_SUBTRACT_BG;
-                    break;
-                case 3:
-                    ratioMethod = SingleGeneImage.AVG_SUBTRACT_BG;
-                    break;
+            if (sdGreenSlide != null){
+				switch (comboBox_1.getSelectedIndex()) {
+					case 0:
+						ratioMethod = SingleGeneImage.TOTAL_SIGNAL;
+						break;
+					case 1:
+						ratioMethod = SingleGeneImage.AVG_SIGNAL;
+						break;
+					case 2:
+						ratioMethod = SingleGeneImage.TOTAL_SUBTRACT_BG;
+						break;
+					case 3:
+						ratioMethod = SingleGeneImage.AVG_SUBTRACT_BG;
+						break;
+				}
+				updateGeneInfo(segmentMode);
+			}
+		});
 
-                }
-            updateGeneInfo(segmentMode);
-
-            });
-
-
-		JCheckBox chckbxNewCheckBox_1 = new JCheckBox("Flag spot");
-		chckbxNewCheckBox_1.setBounds(560, 150, 97, 23);
-		expression.add(chckbxNewCheckBox_1);
 
 		textArea_3 = new JTextArea();
 		textArea_3.setBounds(10, 85, 140, 140);
@@ -674,11 +687,43 @@ class MATabPanel extends JPanel {
 		gridScrollPanePanel.revalidate();
 		gridScrollPanePanel.repaint();
 		imageDisplayPanel.repaint();
+		if (gridCount < (int)spnGrid.getValue())
+		{
+			segmentationIsChanging = true;
+			spnGrid.setValue(1);
+			spnSpot.setValue(1);
+			segmentationIsChanging = false;
+		}
+		refreshSegmentation();
+	}
+
+	protected void refreshSegmentation()
+	{
+		if (gridCount < 1 && sdGreenSlide != null)
+		{
+			segment.remove(scrollGreen);
+			segment.remove(scrollRed);
+			sdGreenSlide = null;
+			sdRedSlide = null;
+			scrollRed = null;
+			scrollGreen = null;
+			textArea_3.setText("");
+			textArea_4.setText("");
+			textArea_5.setText("");
+			segment.repaint();
+		}
+		if (sdGreenSlide != null)
+		{
+			moveTo((int)spnGrid.getValue(), (int)spnSpot.getValue());
+			updateGeneInfo(segmentMode);
+			sdGreenSlide.repaint();
+			sdRedSlide.repaint();
+		}
 	}
 
 	private void segmentationMode(Image greenImage, Image redImage, JPanel target) {
 
-		if (sdGreenSlide == null) {
+		if (sdGreenSlide == null && manager.getNumGrids() > 0 && manager.getGrid(0).getColumns() > 0) {
 			int[][] grnPixels = new int[ipGrn.getHeight()][ipGrn.getWidth()];
 			int[][] redPixels = new int[ipRed.getHeight()][ipRed.getWidth()];
 			for(int i=0; i<(int)ipGrn.getHeight(); i++){
@@ -720,9 +765,8 @@ class MATabPanel extends JPanel {
 			//manager.getCurrentGrid().setCurrentSpot(1);
 			// zoomToCell();
 			showCurrentCell();
-			updateGeneInfo(segmentMode);
+			refreshSegmentation();
 		}
-
 	}
 
 	public void moveTo(int grid, int spot) {
